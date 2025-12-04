@@ -1,13 +1,14 @@
 // components/NextPrayerDisplay.tsx
 
+import { FontSizes } from "@/constants/theme";
+import { useLanguage } from "@/contexts/language-context";
+import {
+  type PrayerTime,
+  formatTime,
+  getTimeUntilPrayer,
+} from "@/lib/prayer-times";
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
-import { useLanguage } from "../contexts/language-context";
-import {
-    type PrayerTime,
-    formatTime,
-    getTimeUntilPrayer,
-} from "../lib/prayer-time";
 
 interface NextPrayerDisplayProps {
   prayer: PrayerTime;
@@ -26,28 +27,43 @@ export function NextPrayerDisplay({ prayer }: NextPrayerDisplayProps) {
   }, [prayer]);
 
   return (
-    <View className="items-center justify-center space-y-4">
+    <View className="items-center justify-center px-4 gap-3">
       {/* Next prayer label */}
-      <Text className="text-2xl md:text-3xl font-medium text-neutral-500 uppercase tracking-[0.2em]">
+      <Text
+        style={{ fontSize: FontSizes.sm, letterSpacing: 4 }}
+        className="text-slate-500 uppercase"
+      >
         {t.nextPrayer}
       </Text>
 
-      {/* Prayer name - extra large */}
-      <Text className="text-6xl md:text-8xl font-bold text-neutral-900 tracking-tight">
+      {/* Prayer name */}
+      <Text
+        style={{ fontSize: FontSizes["3xl"] }}
+        className="font-bold text-slate-900"
+      >
         {t.prayers[prayer.name]}
       </Text>
 
       {/* Prayer time */}
-      <Text className="text-5xl md:text-7xl font-semibold text-primary tabular-nums">
+      <Text
+        style={{ fontSize: FontSizes["2xl"] }}
+        className="font-semibold text-emerald-700"
+      >
         {formatTime(prayer.hour, prayer.minute)}
       </Text>
 
       {/* Time remaining */}
-      <View className="pt-4 items-center">
-        <Text className="text-lg text-neutral-500 uppercase tracking-wide mb-2">
+      <View className="pt-3 items-center">
+        <Text
+          style={{ fontSize: FontSizes.sm }}
+          className="text-slate-500 uppercase tracking-wide mb-1"
+        >
           {t.timeRemaining}
         </Text>
-        <Text className="text-3xl md:text-4xl font-semibold text-emerald-600 tabular-nums">
+        <Text
+          style={{ fontSize: FontSizes.xl }}
+          className="font-semibold text-emerald-600"
+        >
           {timeLeft.hours}
           {t.hours} {timeLeft.minutes}
           {t.minutes}

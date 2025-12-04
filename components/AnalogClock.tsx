@@ -1,137 +1,322 @@
 // components/AnalogClock.tsx
 
-import { useEffect, useState } from "react";
-import { View } from "react-native";
-import Svg, { Circle, Line, Path, Text as SvgText } from "react-native-svg";
-import type { DayPrayers, PrayerName } from "../lib/prayer-time";
+import type {
+  DayPrayers,
+  PrayerName,
+  PrayerTime,
+} from "@/lib/prayer-times";
+import React, { useEffect, useMemo, useState } from "react";
+import { StyleSheet, View } from "react-native";
+import Svg, {
+  Circle,
+  Defs,
+  G,
+  Line,
+  LinearGradient,
+  Path,
+  Rect,
+  Stop,
+} from "react-native-svg";
+
+// --- Constantes de diseño ---
+const CLOCK_SIZE = 320;
+const CENTER = CLOCK_SIZE / 2;
+
+// Radios para diferentes elementos
+const R_BEZEL = CLOCK_SIZE / 2 - 2;
+const R_FACE = R_BEZEL - 10;
+const R_TICKS = R_FACE - 15;
+const R_MARKERS = R_TICKS - 25; // Posición de los círculos de colores de cada oración
+
+// Paleta de colores
+const COLORS = {
+  bezel: "#64748b", // Marco exterior (slate)
+  faceBg: "#f8fafc", // Fondo off-white
+  ticksThin: "#94a3b8",
+  ticksThick: "#475569",
+  hourHand: "#1e293b", // Dark slate
+  minuteHand: "#334155",
+  secondHand: "#ef4444", // Rojo acento
+  centerPivot: "#0f172a",
+};
+
+// Colores específicos para cada rezo
+const PRAYER_COLORS: Record<PrayerName, string> = {
+  fajr: "#0ea5e9", // Amanecer
+  dhuhr: "#eab308", // Mediodía
+  asr: "#f97316", // Tarde
+  maghrib: "#a855f7", // Atardecer
+  isha: "#1e40af", // Noche
+};
 
 interface AnalogClockProps {
   prayers: DayPrayers;
   nextPrayer: PrayerName;
 }
 
-const PRAYER_COLORS: Record<PrayerName, string> = {
-  fajr: "#4a7c59",
-  dhuhr: "#c4a35a",
-  asr: "#d4a574",
-  maghrib: "#8b5a5a",
-  isha: "#5a6a8b",
+// --- Helpers matemáticos ---
+
+// De un PrayerTime (hora/minuto) a grados en el reloj
+const prayerTimeToDegrees = (prayer: PrayerTime | undefined): number => {
+  if (!prayer) return 0;
+  const { hour, minute } = prayer;
+  return (hour % 12) * 30 + minute * 0.5;
 };
 
-export function AnalogClock({ prayers, nextPrayer }: AnalogClockProps) {
-  const [currentTime, setCurrentTime] = useState(new Date());
+const polarToCartesian = (radius: number, angleInDegrees: number) => {
+  const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0;
+  return {
+    x: CENTER + radius * Math.cos(angleInRadians),
+    y: CENTER + radius * Math.sin(angleInRadians),
+  };
+};
 
+// Orden fijo de los rezos
+const PRAYER_KEYS: PrayerName[] = ["fajr", "dhuhr", "asr", "maghrib", "isha"];
+
+export function AnalogClock({ prayers, nextPrayer }: AnalogClockProps) {
+  const [time, setTime] = useState(new Date());
+
+  // Tick cada segundo
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-    return () => clearInterval(interval);
+    const timer = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timer);
   }, []);
 
-  const prayerOrder: PrayerName[] = ["fajr", "dhuhr", "asr", "maghrib", "isha"];
+  const seconds = time.getSeconds();
+  const minutes = time.getMinutes();
+  const hours = time.getHours();
 
-  // Ángulo de cada segmento (72º para 5 rezos)
-  const getSegmentAngle = (index: number) => {
-    return index * 72 - 90; // empezamos en la parte superior
-  };
+  // Ángulos de las agujas
+  const secondDeg = seconds * 6;
+  const minuteDeg = minutes * 6 + seconds * 0.1;
+  const hourDeg = (hours % 12) * 30 + minutes * 0.5;
 
-  // Ángulo de la aguja de horas
-  const hours = currentTime.getHours();
-  const minutes = currentTime.getMinutes();
-  const hourAngle =
-    ((hours % 12) / 12) * 360 + (minutes / 60) * 30 - 90;
+  // 1. Ticks (marcas de minutos / horas)
+  const renderTicks = useMemo(() => {
+    return Array.from({ length: 60 }).map((_, i) => {
+      const isMajor = i % 5 === 0; // cada 5 minutos
+      const angle = i * 6;
+      const length = isMajor ? 12 : 7;
+      const width = isMajor ? 2.5 : 1.5;
+      const color = isMajor ? COLORS.ticksThick : COLORS.ticksThin;
 
-  // Path SVG de cada segmento
-  const createArc = (startAngle: number, endAngle: number, radius: number) => {
-    const startRad = (startAngle * Math.PI) / 180;
-    const endRad = (endAngle * Math.PI) / 180;
+      const start = polarToCartesian(R_TICKS, angle);
+      const end = polarToCartesian(R_TICKS - length, angle);
 
-    const cx = 150;
-    const cy = 150;
-
-    const x1 = cx + radius * Math.cos(startRad);
-    const y1 = cy + radius * Math.sin(startRad);
-    const x2 = cx + radius * Math.cos(endRad);
-    const y2 = cy + radius * Math.sin(endRad);
-
-    const largeArc = endAngle - startAngle > 180 ? 1 : 0;
-
-    return `M ${cx} ${cy} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`;
-  };
-
-  return (
-    <View className="w-full max-w-[320px] self-center">
-      <Svg
-        viewBox="0 0 300 300"
-        style={{ width: "100%", height: undefined, aspectRatio: 1 }}
-      >
-        {/* Círculo de fondo */}
-        <Circle
-          cx={150}
-          cy={150}
-          r={140}
-          fill="#ffffff"
-          stroke="#e5e7eb"
-          strokeWidth={3}
-        />
-
-        {/* Segmentos de cada oración */}
-        {prayerOrder.map((prayer, index) => {
-          const startAngle = getSegmentAngle(index);
-          const endAngle = getSegmentAngle(index + 1);
-          const isNext = prayer === nextPrayer;
-
-          return (
-            <Path
-              key={prayer}
-              d={createArc(startAngle, endAngle, 130)}
-              fill={PRAYER_COLORS[prayer]}
-              opacity={isNext ? 1 : 0.25}
-            />
-          );
-        })}
-
-        {/* Círculo interior (efecto donut) */}
-        <Circle cx={150} cy={150} r={70} fill="#ffffff" />
-
-        {/* Punto central */}
-        <Circle cx={150} cy={150} r={8} fill="#020617" />
-
-        {/* Aguja de hora */}
+      return (
         <Line
-          x1={150}
-          y1={150}
-          x2={150 + 55 * Math.cos((hourAngle * Math.PI) / 180)}
-          y2={150 + 55 * Math.sin((hourAngle * Math.PI) / 180)}
-          stroke="#020617"
-          strokeWidth={6}
+          key={i}
+          x1={start.x}
+          y1={start.y}
+          x2={end.x}
+          y2={end.y}
+          stroke={color}
+          strokeWidth={width}
           strokeLinecap="round"
         />
+      );
+    });
+  }, []);
 
-        {/* Etiquetas alrededor del reloj */}
-        {prayerOrder.map((prayer, index) => {
-          const angle = getSegmentAngle(index) + 36; // centro del segmento
-          const rad = (angle * Math.PI) / 180;
-          const x = 150 + 105 * Math.cos(rad);
-          const y = 150 + 105 * Math.sin(rad);
-          const isNext = prayer === nextPrayer;
+  // 2. Marcadores de rezo (círculos de colores)
+  const renderPrayerMarkers = useMemo(() => {
+    return PRAYER_KEYS.map((key) => {
+      const prayer = prayers[key];
+      if (!prayer) return null;
 
-          return (
-            <SvgText
-              key={`label-${prayer}`}
-              x={x}
-              y={y}
-              textAnchor="middle"
-              alignmentBaseline="middle"
-              fontSize={10}
-              fontWeight="700"
-              fill={isNext ? "#020617" : "#6b7280"}
-            >
-              {prayer.charAt(0).toUpperCase()}
-            </SvgText>
-          );
-        })}
-      </Svg>
+      const degrees = prayerTimeToDegrees(prayer);
+      const isNext = key === nextPrayer;
+      const color = PRAYER_COLORS[key];
+
+      const pos = polarToCartesian(R_MARKERS, degrees);
+      const size = isNext ? 14 : 9;
+
+      return (
+        <G key={key} transform={`translate(${pos.x}, ${pos.y})`}>
+          {/* Anillo exterior brillante si es el siguiente rezo */}
+          {isNext && (
+            <Circle
+              r={size + 3}
+              fill="none"
+              stroke="white"
+              strokeWidth={3}
+              opacity={0.8}
+            />
+          )}
+          {/* Círculo de color principal */}
+          <Circle
+            r={size}
+            fill={color}
+            stroke={COLORS.hourHand}
+            strokeWidth={1}
+            strokeOpacity={0.2}
+          />
+        </G>
+      );
+    });
+  }, [prayers, nextPrayer]);
+
+  return (
+    <View style={styles.container}>
+      <View style={[styles.clockWrapper, styles.shadow]}>
+        <Svg
+          width={CLOCK_SIZE}
+          height={CLOCK_SIZE}
+          viewBox={`0 0 ${CLOCK_SIZE} ${CLOCK_SIZE}`}
+        >
+          <Defs>
+            {/* Gradiente sutil para las agujas metálicas */}
+            <LinearGradient id="handGradient" x1="0" y1="0" x2="1" y2="0">
+              <Stop
+                offset="0%"
+                stopColor={COLORS.hourHand}
+                stopOpacity={0.9}
+              />
+              <Stop offset="50%" stopColor={COLORS.minuteHand} />
+              <Stop
+                offset="100%"
+                stopColor={COLORS.hourHand}
+                stopOpacity={0.9}
+              />
+            </LinearGradient>
+          </Defs>
+
+          {/* CAPA 1: Bisel Exterior */}
+          <Circle cx={CENTER} cy={CENTER} r={R_BEZEL} fill={COLORS.bezel} />
+
+          {/* CAPA 2: Cara del Reloj */}
+          <Circle
+            cx={CENTER}
+            cy={CENTER}
+            r={R_FACE}
+            fill={COLORS.faceBg}
+            stroke="white"
+            strokeWidth={2}
+          />
+
+          {/* CAPA 3: Ticks */}
+          {renderTicks}
+
+          {/* CAPA 4: Marcadores de Rezo */}
+          {renderPrayerMarkers}
+
+          {/* CAPA 5: Agujas */}
+
+          {/* Horas */}
+          <G transform={`rotate(${hourDeg}, ${CENTER}, ${CENTER})`}>
+            {/* Contrapeso trasero */}
+            <Rect
+              x={CENTER - 3}
+              y={CENTER + 5}
+              width={6}
+              height={25}
+              rx={3}
+              fill={COLORS.hourHand}
+            />
+            {/* Cuerpo principal cónico */}
+            <Path
+              d={`M ${CENTER - 4} ${CENTER} L ${
+                CENTER - 2
+              } ${CENTER - R_FACE * 0.6} L ${
+                CENTER + 2
+              } ${CENTER - R_FACE * 0.6} L ${CENTER + 4} ${CENTER} Z`}
+              fill="url(#handGradient)"
+            />
+          </G>
+
+          {/* Minutos */}
+          <G transform={`rotate(${minuteDeg}, ${CENTER}, ${CENTER})`}>
+            <Rect
+              x={CENTER - 2}
+              y={CENTER + 5}
+              width={4}
+              height={30}
+              rx={2}
+              fill={COLORS.minuteHand}
+            />
+            <Path
+              d={`M ${CENTER - 3} ${CENTER} L ${
+                CENTER - 1.5
+              } ${CENTER - R_FACE * 0.85} L ${
+                CENTER + 1.5
+              } ${CENTER - R_FACE * 0.85} L ${CENTER + 3} ${CENTER} Z`}
+              fill="url(#handGradient)"
+            />
+          </G>
+
+          {/* Segundos */}
+          <G transform={`rotate(${secondDeg}, ${CENTER}, ${CENTER})`}>
+            {/* Cola */}
+            <Line
+              x1={CENTER}
+              y1={CENTER}
+              x2={CENTER}
+              y2={CENTER + 35}
+              stroke={COLORS.secondHand}
+              strokeWidth={2}
+            />
+            <Circle
+              cx={CENTER}
+              cy={CENTER + 28}
+              r={4}
+              fill={COLORS.secondHand}
+            />
+            {/* Cuerpo principal */}
+            <Line
+              x1={CENTER}
+              y1={CENTER}
+              x2={CENTER}
+              y2={CENTER - R_FACE * 0.9}
+              stroke={COLORS.secondHand}
+              strokeWidth={1.5}
+            />
+            {/* Punto en la punta */}
+            <Circle
+              cx={CENTER}
+              cy={CENTER - R_FACE * 0.9}
+              r={2}
+              fill={COLORS.secondHand}
+            />
+          </G>
+
+          {/* CAPA 6: Pivote central */}
+          <Circle
+            cx={CENTER}
+            cy={CENTER}
+            r={8}
+            fill={COLORS.centerPivot}
+            stroke={COLORS.bezel}
+            strokeWidth={2}
+          />
+          <Circle cx={CENTER} cy={CENTER} r={4} fill={COLORS.secondHand} />
+          <Circle cx={CENTER} cy={CENTER} r={2} fill="#ffffff" />
+        </Svg>
+      </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    width: "100%",
+    alignItems: "center",
+    paddingVertical: 16,
+  },
+  clockWrapper: {
+    width: CLOCK_SIZE,
+    height: CLOCK_SIZE,
+    borderRadius: CLOCK_SIZE / 2,
+    backgroundColor: "transparent",
+  },
+  shadow: {
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 10,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 15,
+  },
+});

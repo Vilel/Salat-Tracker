@@ -1,12 +1,12 @@
 // components/PrayerTimeline.tsx
 
-import { Text, View } from "react-native";
-import { useLanguage } from "../contexts/language-context";
+import { useLanguage } from "@/contexts/language-context";
 import {
-    type DayPrayers,
-    formatTime,
-    type PrayerName,
-} from "../lib/prayer-time";
+  type DayPrayers,
+  formatTime,
+  type PrayerName,
+} from "@/lib/prayer-times";
+import { Text, View } from "react-native";
 
 interface PrayerTimelineProps {
   prayers: DayPrayers;
@@ -21,38 +21,61 @@ const PRAYER_ORDER: PrayerName[] = [
   "isha",
 ];
 
+const PRAYER_COLORS: Record<PrayerName, string> = {
+  fajr: "#0ea5e9",
+  dhuhr: "#eab308",
+  asr: "#f97316",
+  maghrib: "#a855f7",
+  isha: "#1e40af",
+};
+
 export function PrayerTimeline({ prayers, nextPrayer }: PrayerTimelineProps) {
   const { t } = useLanguage();
 
   return (
     <View className="w-full px-4">
-      <View className="flex-row justify-between items-center gap-1">
+      <View className="bg-white rounded-3xl px-4 py-4 shadow-sm border border-slate-100 flex-row justify-between gap-2">
         {PRAYER_ORDER.map((prayer, index) => {
           const isNext = prayer === nextPrayer;
           const isPast = PRAYER_ORDER.indexOf(nextPrayer) > index;
           const prayerData = prayers[prayer];
 
+          const dotColor = PRAYER_COLORS[prayer];
+
           return (
             <View
               key={prayer}
-              className={`flex-1 items-center gap-2 py-4 px-2 rounded-xl transition-all duration-300 ${
-                isNext
-                  ? "bg-primary scale-105"
-                  : isPast
-                  ? "opacity-40 bg-neutral-100"
-                  : "bg-neutral-100"
-              }`}
+              className="flex-1 items-center gap-1"
             >
+              {/* Punto de color */}
+              <View
+                className={`w-3 h-3 rounded-full mb-1 ${
+                  isNext ? "border-2 border-emerald-500" : ""
+                }`}
+                style={{ backgroundColor: dotColor }}
+              />
+
+              {/* Nombre del rezo */}
               <Text
-                className={`text-base font-bold uppercase tracking-wide ${
-                  isNext ? "text-primary-foreground" : "text-neutral-900"
+                className={`text-xs font-semibold text-center uppercase ${
+                  isPast
+                    ? "text-slate-300"
+                    : isNext
+                    ? "text-emerald-700"
+                    : "text-slate-700"
                 }`}
               >
                 {t.prayers[prayer]}
               </Text>
+
+              {/* Hora */}
               <Text
-                className={`text-lg font-semibold ${
-                  isNext ? "text-primary-foreground" : "text-neutral-500"
+                className={`text-sm font-medium text-center ${
+                  isPast
+                    ? "text-slate-300"
+                    : isNext
+                    ? "text-slate-900"
+                    : "text-slate-600"
                 }`}
               >
                 {formatTime(prayerData.hour, prayerData.minute)}
