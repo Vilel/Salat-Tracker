@@ -5,292 +5,395 @@ import type {
   PrayerName,
   PrayerTime,
 } from "@/lib/prayer-times";
-import React, { useEffect, useMemo, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Animated, Easing, StyleSheet, View } from "react-native";
 import Svg, {
   Circle,
-  Defs,
   G,
   Line,
-  LinearGradient,
   Path,
-  Rect,
-  Stop,
+  Text as SvgText,
 } from "react-native-svg";
 
 // --- Constantes de diseño ---
 const CLOCK_SIZE = 320;
 const CENTER = CLOCK_SIZE / 2;
 
-// Radios para diferentes elementos
-const R_BEZEL = CLOCK_SIZE / 2 - 2;
-const R_FACE = R_BEZEL - 10;
-const R_TICKS = R_FACE - 15;
-const R_MARKERS = R_TICKS - 25; // Posición de los círculos de colores de cada oración
+// Radios
+const R_BEZEL = CLOCK_SIZE / 2; // borde negro exterior
+const R_FACE = R_BEZEL - 12; // cara del reloj
+const R_ARC_OUTER = R_FACE; // anillo de franjas de salat (sin margen)
+const R_ARC_INNER = R_FACE - 18;
+const R_TICKS = R_ARC_INNER - 6; // (ya no pondremos líneas, pero usamos este radio para números)
+const R_NUMBERS = R_TICKS - 12; // números 00–23
+const R_ICON_RADIUS = R_FACE * 0.5; // radio para sol/luna (más cerca del centro)
 
-// Paleta de colores
+// Paleta
 const COLORS = {
-  bezel: "#64748b", // Marco exterior (slate)
-  faceBg: "#f8fafc", // Fondo off-white
-  ticksThin: "#94a3b8",
-  ticksThick: "#475569",
-  hourHand: "#1e293b", // Dark slate
-  minuteHand: "#334155",
-  secondHand: "#ef4444", // Rojo acento
-  centerPivot: "#0f172a",
+  bezel: "#000000",
+  faceBg: "#ffffff",
+  nightOverlay: "rgba(15, 23, 42, 0.55)", // capa oscura noche
+  tick: "#111827",
+  text: "#111827",
+  hourHand: "#111827",
+  minuteHand: "#111827",
+  center: "#111827",
 };
 
-// Colores específicos para cada rezo
+// Colores de cada rezo (para franjas)
 const PRAYER_COLORS: Record<PrayerName, string> = {
-  fajr: "#0ea5e9", // Amanecer
-  dhuhr: "#eab308", // Mediodía
-  asr: "#f97316", // Tarde
-  maghrib: "#a855f7", // Atardecer
-  isha: "#1e40af", // Noche
-};
-
-interface AnalogClockProps {
-  prayers: DayPrayers;
-  nextPrayer: PrayerName;
-}
-
-// --- Helpers matemáticos ---
-
-// De un PrayerTime (hora/minuto) a grados en el reloj
-const prayerTimeToDegrees = (prayer: PrayerTime | undefined): number => {
-  if (!prayer) return 0;
-  const { hour, minute } = prayer;
-  return (hour % 12) * 30 + minute * 0.5;
-};
-
-const polarToCartesian = (radius: number, angleInDegrees: number) => {
-  const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0;
-  return {
-    x: CENTER + radius * Math.cos(angleInRadians),
-    y: CENTER + radius * Math.sin(angleInRadians),
-  };
+  fajr: "#0ea5e9", // amanecer
+  dhuhr: "#eab308", // mediodía
+  asr: "#f97316", // tarde
+  maghrib: "#a855f7", // atardecer
+  isha: "#1e40af", // noche
 };
 
 // Orden fijo de los rezos
 const PRAYER_KEYS: PrayerName[] = ["fajr", "dhuhr", "asr", "maghrib", "isha"];
 
-export function AnalogClock({ prayers, nextPrayer }: AnalogClockProps) {
-  const [time, setTime] = useState(new Date());
+interface AnalogClockProps {
+  prayers: DayPrayers;
+  nextPrayer: PrayerName; // lo mantenemos por API aunque ahora no resaltemos uno concreto
+}
 
-  // Tick cada segundo
+// --- Helpers matemáticos ---
+
+// 24 h: 0–23 -> 360º (15º por hora), 0h arriba.
+const timeToDegrees24 = (hour: number, minute: number): number => {
+  const h = hour + minute / 60;
+  return h * 15; // 360 / 24
+};
+
+const prayerTimeToDegrees24 = (prayer: PrayerTime | undefined): number => {
+  if (!prayer) return 0;
+  return timeToDegrees24(prayer.hour, prayer.minute);
+};
+
+const polarToCartesian = (radius: number, angleDeg: number) => {
+  // 0º en la parte superior, sentido horario
+  const angleRad = ((angleDeg - 90) * Math.PI) / 180;
+  return {
+    x: CENTER + radius * Math.cos(angleRad),
+    y: CENTER + radius * Math.sin(angleRad),
+  };
+};
+
+// Sector lleno entre startDeg y endDeg (puede cruzar medianoche)
+const createSectorPath = (startDeg: number, endDeg: number, radius: number) => {
+  let s = startDeg;
+  let e = endDeg;
+
+  if (e <= s) e += 360;
+
+  const largeArc = e - s > 180 ? 1 : 0;
+
+  const start = polarToCartesian(radius, s);
+  const end = polarToCartesian(radius, e);
+
+  return [
+    `M ${CENTER} ${CENTER}`,
+    `L ${start.x} ${start.y}`,
+    `A ${radius} ${radius} 0 ${largeArc} 1 ${end.x} ${end.y}`,
+    "Z",
+  ].join(" ");
+};
+
+// Arco anillo entre startDeg y endDeg (para franjas de salat)
+const createRingArcPath = (
+  startDeg: number,
+  endDeg: number,
+  innerR: number,
+  outerR: number
+): string => {
+  let s = startDeg;
+  let e = endDeg;
+
+  if (e <= s) e += 360;
+
+  const largeArc = e - s > 180 ? 1 : 0;
+
+  const outerStart = polarToCartesian(outerR, s);
+  const outerEnd = polarToCartesian(outerR, e);
+  const innerStart = polarToCartesian(innerR, s);
+  const innerEnd = polarToCartesian(innerR, e);
+
+  return [
+    `M ${outerStart.x} ${outerStart.y}`,
+    `A ${outerR} ${outerR} 0 ${largeArc} 1 ${outerEnd.x} ${outerEnd.y}`,
+    `L ${innerEnd.x} ${innerEnd.y}`,
+    `A ${innerR} ${innerR} 0 ${largeArc} 0 ${innerStart.x} ${innerStart.y}`,
+    "Z",
+  ].join(" ");
+};
+
+// ángulo medio entre dos ángulos, respetando wrap 360
+const midAngle = (startDeg: number, endDeg: number): number => {
+  let s = startDeg;
+  let e = endDeg;
+  if (e <= s) e += 360;
+  return (s + e) / 2;
+};
+
+export function AnalogClock({ prayers }: AnalogClockProps) {
+  const [now, setNow] = useState(new Date());
+
+  // Animación para sol y luna
+  const sunAnim = useRef(new Animated.Value(0)).current;
+  const moonAnim = useRef(new Animated.Value(0)).current;
+
   useEffect(() => {
-    const timer = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(timer);
+    const makeLoop = (val: Animated.Value) =>
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(val, {
+            toValue: 1,
+            duration: 2000,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(val, {
+            toValue: 0,
+            duration: 2000,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+        ])
+      );
+
+    makeLoop(sunAnim).start();
+    makeLoop(moonAnim).start();
+  }, [sunAnim, moonAnim]);
+
+  // Tick cada segundo (hora/minuto)
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
   }, []);
 
-  const seconds = time.getSeconds();
-  const minutes = time.getMinutes();
-  const hours = time.getHours();
+  const seconds = now.getSeconds();
+  const minutes = now.getMinutes();
+  const hours = now.getHours();
 
-  // Ángulos de las agujas
-  const secondDeg = seconds * 6;
-  const minuteDeg = minutes * 6 + seconds * 0.1;
-  const hourDeg = (hours % 12) * 30 + minutes * 0.5;
+  // Agujas (24 h para la hora)
+  const hourDeg = timeToDegrees24(hours, minutes);
+  const minuteDeg = minutes * 6 + seconds * 0.1; // 0–59 -> 0–360
 
-  // 1. Ticks (marcas de minutos / horas)
-  const renderTicks = useMemo(() => {
-    return Array.from({ length: 60 }).map((_, i) => {
-      const isMajor = i % 5 === 0; // cada 5 minutos
-      const angle = i * 6;
-      const length = isMajor ? 12 : 7;
-      const width = isMajor ? 2.5 : 1.5;
-      const color = isMajor ? COLORS.ticksThick : COLORS.ticksThin;
+  // 1) Día / noche dinámicos a partir de Fajr–Maghrib
+  const { nightSectorPath, sunDeg, moonDeg } = useMemo(() => {
+    const fajr = prayers.fajr;
+    const maghrib = prayers.maghrib;
 
-      const start = polarToCartesian(R_TICKS, angle);
-      const end = polarToCartesian(R_TICKS - length, angle);
+    let dayStartDeg: number;
+    let dayEndDeg: number;
 
-      return (
-        <Line
-          key={i}
-          x1={start.x}
-          y1={start.y}
-          x2={end.x}
-          y2={end.y}
-          stroke={color}
-          strokeWidth={width}
-          strokeLinecap="round"
-        />
+    if (fajr && maghrib) {
+      dayStartDeg = prayerTimeToDegrees24(fajr);
+      dayEndDeg = prayerTimeToDegrees24(maghrib);
+    } else {
+      // Fallback: día 06–18 si faltan datos
+      dayStartDeg = 6 * 15;
+      dayEndDeg = 18 * 15;
+    }
+
+    // noche = sector complementario sobre la cara del reloj
+    const nightSector = createSectorPath(dayEndDeg, dayStartDeg, R_FACE);
+
+    // sol en el centro del arco de día
+    const sunAngle = midAngle(dayStartDeg, dayEndDeg);
+    // luna en el centro del arco de noche
+    const moonAngle = midAngle(dayEndDeg, dayStartDeg);
+
+    return { nightSectorPath: nightSector, sunDeg: sunAngle, moonDeg: moonAngle };
+  }, [prayers]);
+
+  // 2) Franjas de cada rezo (anillo exterior sin margen)
+  const prayerArcs = useMemo(() => {
+    const arcs: React.ReactNode[] = [];
+
+    const sequence = PRAYER_KEYS;
+    for (let i = 0; i < sequence.length; i++) {
+      const currentName = sequence[i];
+      const nextName = sequence[(i + 1) % sequence.length];
+
+      const current = prayers[currentName];
+      const next = prayers[nextName];
+
+      if (!current || !next) continue;
+
+      const startDeg = prayerTimeToDegrees24(current);
+      const endDeg = prayerTimeToDegrees24(next);
+      const color = PRAYER_COLORS[currentName];
+
+      const d = createRingArcPath(startDeg, endDeg, R_ARC_INNER, R_ARC_OUTER);
+
+      arcs.push(<Path key={`arc-${currentName}`} d={d} fill={color} />);
+    }
+
+    return arcs;
+  }, [prayers]);
+
+  // 3) Números 00–23 (ya sin ticks, el usuario se orienta con horas)
+  const hourNumbers = useMemo(() => {
+    const texts: React.ReactNode[] = [];
+    for (let h = 0; h < 24; h++) {
+      const angle = h * 15;
+      const pos = polarToCartesian(R_NUMBERS, angle);
+      const label = h.toString().padStart(2, "0");
+
+      texts.push(
+        <SvgText
+          key={`num-${h}`}
+          x={pos.x}
+          y={pos.y + 4}
+          fontSize={12}
+          fill={COLORS.text}
+          textAnchor="middle"
+        >
+          {label}
+        </SvgText>
       );
-    });
+    }
+    return texts;
   }, []);
 
-  // 2. Marcadores de rezo (círculos de colores)
-  const renderPrayerMarkers = useMemo(() => {
-    return PRAYER_KEYS.map((key) => {
-      const prayer = prayers[key];
-      if (!prayer) return null;
+  // 4) Posiciones de sol y luna (centradas en sus sectores, a radio más corto)
+  const sunPos = polarToCartesian(R_ICON_RADIUS, sunDeg);
+  const moonPos = polarToCartesian(R_ICON_RADIUS, moonDeg);
+  const iconSize = 40;
 
-      const degrees = prayerTimeToDegrees(prayer);
-      const isNext = key === nextPrayer;
-      const color = PRAYER_COLORS[key];
+  // Animaciones de sol y luna (pequeño flotado)
+  const sunStyle = {
+    transform: [
+      {
+        translateY: sunAnim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [-4, 4],
+        }),
+      },
+      {
+        scale: sunAnim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0.95, 1.05],
+        }),
+      },
+    ],
+  };
 
-      const pos = polarToCartesian(R_MARKERS, degrees);
-      const size = isNext ? 14 : 9;
-
-      return (
-        <G key={key} transform={`translate(${pos.x}, ${pos.y})`}>
-          {/* Anillo exterior brillante si es el siguiente rezo */}
-          {isNext && (
-            <Circle
-              r={size + 3}
-              fill="none"
-              stroke="white"
-              strokeWidth={3}
-              opacity={0.8}
-            />
-          )}
-          {/* Círculo de color principal */}
-          <Circle
-            r={size}
-            fill={color}
-            stroke={COLORS.hourHand}
-            strokeWidth={1}
-            strokeOpacity={0.2}
-          />
-        </G>
-      );
-    });
-  }, [prayers, nextPrayer]);
+  const moonStyle = {
+    transform: [
+      {
+        translateY: moonAnim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [4, -4],
+        }),
+      },
+      {
+        scale: moonAnim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0.95, 1.05],
+        }),
+      },
+    ],
+  };
 
   return (
     <View style={styles.container}>
       <View style={[styles.clockWrapper, styles.shadow]}>
+        {/* SVG de fondo: cara, noche, franjas y números */}
         <Svg
           width={CLOCK_SIZE}
           height={CLOCK_SIZE}
           viewBox={`0 0 ${CLOCK_SIZE} ${CLOCK_SIZE}`}
         >
-          <Defs>
-            {/* Gradiente sutil para las agujas metálicas */}
-            <LinearGradient id="handGradient" x1="0" y1="0" x2="1" y2="0">
-              <Stop
-                offset="0%"
-                stopColor={COLORS.hourHand}
-                stopOpacity={0.9}
-              />
-              <Stop offset="50%" stopColor={COLORS.minuteHand} />
-              <Stop
-                offset="100%"
-                stopColor={COLORS.hourHand}
-                stopOpacity={0.9}
-              />
-            </LinearGradient>
-          </Defs>
-
-          {/* CAPA 1: Bisel Exterior */}
+          {/* Bisel negro */}
           <Circle cx={CENTER} cy={CENTER} r={R_BEZEL} fill={COLORS.bezel} />
 
-          {/* CAPA 2: Cara del Reloj */}
-          <Circle
-            cx={CENTER}
-            cy={CENTER}
-            r={R_FACE}
-            fill={COLORS.faceBg}
-            stroke="white"
-            strokeWidth={2}
+          {/* Cara blanca base */}
+          <Circle cx={CENTER} cy={CENTER} r={R_FACE} fill={COLORS.faceBg} />
+
+          {/* Sector de noche (oscurece la parte correspondiente) */}
+          <Path d={nightSectorPath} fill={COLORS.nightOverlay} />
+
+          {/* Franjas de cada rezo (anillo exterior sin margen) */}
+          {prayerArcs}
+
+          {/* Números 00–23 */}
+          {hourNumbers}
+        </Svg>
+
+        {/* Sol y luna como iconos animados, por debajo de las agujas */}
+        <Animated.View
+          style={[
+            styles.icon,
+            sunStyle,
+            {
+              left: sunPos.x - iconSize / 2,
+              top: sunPos.y - iconSize / 2,
+            },
+          ]}
+        >
+          <Ionicons
+            name="sunny"
+            size={iconSize}
+            color="#facc15"
           />
+        </Animated.View>
 
-          {/* CAPA 3: Ticks */}
-          {renderTicks}
+        <Animated.View
+          style={[
+            styles.icon,
+            moonStyle,
+            {
+              left: moonPos.x - iconSize / 2,
+              top: moonPos.y - iconSize / 2,
+            },
+          ]}
+        >
+          <Ionicons
+            name="moon"
+            size={iconSize}
+            color="#0f172a"
+          />
+        </Animated.View>
 
-          {/* CAPA 4: Marcadores de Rezo */}
-          {renderPrayerMarkers}
-
-          {/* CAPA 5: Agujas */}
-
-          {/* Horas */}
+        {/* SVG superior: solo agujas y pivote central, por encima de sol/luna */}
+        <Svg
+          width={CLOCK_SIZE}
+          height={CLOCK_SIZE}
+          viewBox={`0 0 ${CLOCK_SIZE} ${CLOCK_SIZE}`}
+          style={StyleSheet.absoluteFill}
+        >
+          {/* Aguja de hora (24h) */}
           <G transform={`rotate(${hourDeg}, ${CENTER}, ${CENTER})`}>
-            {/* Contrapeso trasero */}
-            <Rect
-              x={CENTER - 3}
-              y={CENTER + 5}
-              width={6}
-              height={25}
-              rx={3}
-              fill={COLORS.hourHand}
-            />
-            {/* Cuerpo principal cónico */}
-            <Path
-              d={`M ${CENTER - 4} ${CENTER} L ${
-                CENTER - 2
-              } ${CENTER - R_FACE * 0.6} L ${
-                CENTER + 2
-              } ${CENTER - R_FACE * 0.6} L ${CENTER + 4} ${CENTER} Z`}
-              fill="url(#handGradient)"
+            <Line
+              x1={CENTER}
+              y1={CENTER}
+              x2={CENTER}
+              y2={CENTER - R_FACE * 0.6}
+              stroke={COLORS.hourHand}
+              strokeWidth={4}
+              strokeLinecap="round"
             />
           </G>
 
-          {/* Minutos */}
+          {/* Aguja de minutos */}
           <G transform={`rotate(${minuteDeg}, ${CENTER}, ${CENTER})`}>
-            <Rect
-              x={CENTER - 2}
-              y={CENTER + 5}
-              width={4}
-              height={30}
-              rx={2}
-              fill={COLORS.minuteHand}
-            />
-            <Path
-              d={`M ${CENTER - 3} ${CENTER} L ${
-                CENTER - 1.5
-              } ${CENTER - R_FACE * 0.85} L ${
-                CENTER + 1.5
-              } ${CENTER - R_FACE * 0.85} L ${CENTER + 3} ${CENTER} Z`}
-              fill="url(#handGradient)"
-            />
-          </G>
-
-          {/* Segundos */}
-          <G transform={`rotate(${secondDeg}, ${CENTER}, ${CENTER})`}>
-            {/* Cola */}
             <Line
               x1={CENTER}
               y1={CENTER}
               x2={CENTER}
-              y2={CENTER + 35}
-              stroke={COLORS.secondHand}
-              strokeWidth={2}
-            />
-            <Circle
-              cx={CENTER}
-              cy={CENTER + 28}
-              r={4}
-              fill={COLORS.secondHand}
-            />
-            {/* Cuerpo principal */}
-            <Line
-              x1={CENTER}
-              y1={CENTER}
-              x2={CENTER}
-              y2={CENTER - R_FACE * 0.9}
-              stroke={COLORS.secondHand}
-              strokeWidth={1.5}
-            />
-            {/* Punto en la punta */}
-            <Circle
-              cx={CENTER}
-              cy={CENTER - R_FACE * 0.9}
-              r={2}
-              fill={COLORS.secondHand}
+              y2={CENTER - R_FACE * 0.85}
+              stroke={COLORS.minuteHand}
+              strokeWidth={2.5}
+              strokeLinecap="round"
             />
           </G>
 
-          {/* CAPA 6: Pivote central */}
-          <Circle
-            cx={CENTER}
-            cy={CENTER}
-            r={8}
-            fill={COLORS.centerPivot}
-            stroke={COLORS.bezel}
-            strokeWidth={2}
-          />
-          <Circle cx={CENTER} cy={CENTER} r={4} fill={COLORS.secondHand} />
-          <Circle cx={CENTER} cy={CENTER} r={2} fill="#ffffff" />
+          {/* Pivote central */}
+          <Circle cx={CENTER} cy={CENTER} r={7} fill={COLORS.center} />
+          <Circle cx={CENTER} cy={CENTER} r={3} fill="#ffffff" />
         </Svg>
       </View>
     </View>
@@ -308,6 +411,7 @@ const styles = StyleSheet.create({
     height: CLOCK_SIZE,
     borderRadius: CLOCK_SIZE / 2,
     backgroundColor: "transparent",
+    position: "relative",
   },
   shadow: {
     shadowColor: "#000",
@@ -315,8 +419,11 @@ const styles = StyleSheet.create({
       width: 0,
       height: 10,
     },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 15,
+    shadowOpacity: 0.25,
+    shadowRadius: 18,
+    elevation: 12,
+  },
+  icon: {
+    position: "absolute",
   },
 });
