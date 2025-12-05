@@ -1,13 +1,14 @@
 // components/AnalogClock.tsx
 
-import type {
-  DayPrayers,
-  PrayerName,
-  PrayerTime,
-} from "@/lib/prayer-times";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Animated, Easing, StyleSheet, View } from "react-native";
+import {
+  Animated,
+  Easing,
+  StyleSheet,
+  View,
+  useColorScheme,
+} from "react-native";
 import Svg, {
   Circle,
   G,
@@ -16,46 +17,38 @@ import Svg, {
   Text as SvgText,
 } from "react-native-svg";
 
+import {
+  ClockTheme,
+  Colors,
+  FontSizes,
+  PrayerStripeColors,
+  type ColorSchemeName,
+} from "@/constants/theme";
+import type {
+  DayPrayers,
+  PrayerName,
+  PrayerTime,
+} from "@/lib/prayer-times";
+
 // --- Constantes de diseño ---
 const CLOCK_SIZE = 320;
 const CENTER = CLOCK_SIZE / 2;
 
 // Radios
-const R_BEZEL = CLOCK_SIZE / 2; // borde negro exterior
-const R_FACE = R_BEZEL - 12; // cara del reloj
-const R_ARC_OUTER = R_FACE; // anillo de franjas de salat (sin margen)
-const R_ARC_INNER = R_FACE - 18;
-const R_TICKS = R_ARC_INNER - 6; // (ya no pondremos líneas, pero usamos este radio para números)
-const R_NUMBERS = R_TICKS - 12; // números 00–23
-const R_ICON_RADIUS = R_FACE * 0.5; // radio para sol/luna (más cerca del centro)
-
-// Paleta
-const COLORS = {
-  bezel: "#000000",
-  faceBg: "#ffffff",
-  nightOverlay: "rgba(15, 23, 42, 0.55)", // capa oscura noche
-  tick: "#111827",
-  text: "#111827",
-  hourHand: "#111827",
-  minuteHand: "#111827",
-  center: "#111827",
-};
-
-// Colores de cada rezo (para franjas)
-const PRAYER_COLORS: Record<PrayerName, string> = {
-  fajr: "#0ea5e9", // amanecer
-  dhuhr: "#eab308", // mediodía
-  asr: "#f97316", // tarde
-  maghrib: "#a855f7", // atardecer
-  isha: "#1e40af", // noche
-};
+const R_BEZEL = CLOCK_SIZE / 2;      // radio máximo del reloj
+const R_ARC_OUTER = R_BEZEL;         // las franjas llegan hasta el borde
+const R_ARC_INNER = R_BEZEL - 18;    // grosor del anillo de franjas
+const R_FACE = R_ARC_INNER;          // cara interior del reloj
+const R_TICKS = R_FACE - 6;
+const R_NUMBERS = R_TICKS - 12;      // números 00–23
+const R_ICON_RADIUS = R_FACE * 0.5;  // sol / luna
 
 // Orden fijo de los rezos
 const PRAYER_KEYS: PrayerName[] = ["fajr", "dhuhr", "asr", "maghrib", "isha"];
 
 interface AnalogClockProps {
   prayers: DayPrayers;
-  nextPrayer: PrayerName; // lo mantenemos por API aunque ahora no resaltemos uno concreto
+  nextPrayer: PrayerName; // se mantiene por API aunque no lo usemos visualmente
 }
 
 // --- Helpers matemáticos ---
@@ -81,7 +74,11 @@ const polarToCartesian = (radius: number, angleDeg: number) => {
 };
 
 // Sector lleno entre startDeg y endDeg (puede cruzar medianoche)
-const createSectorPath = (startDeg: number, endDeg: number, radius: number) => {
+const createSectorPath = (
+  startDeg: number,
+  endDeg: number,
+  radius: number
+) => {
   let s = startDeg;
   let e = endDeg;
 
@@ -139,6 +136,14 @@ const midAngle = (startDeg: number, endDeg: number): number => {
 export function AnalogClock({ prayers }: AnalogClockProps) {
   const [now, setNow] = useState(new Date());
 
+  // Tema actual (light / dark) según el sistema
+  const scheme = useColorScheme();
+  const colorScheme: ColorSchemeName =
+    scheme === "dark" ? "dark" : "light";
+
+  const clockColors = ClockTheme[colorScheme];
+  const textColor = Colors[colorScheme].text;
+
   // Animación para sol y luna
   const sunAnim = useRef(new Animated.Value(0)).current;
   const moonAnim = useRef(new Animated.Value(0)).current;
@@ -152,13 +157,13 @@ export function AnalogClock({ prayers }: AnalogClockProps) {
             duration: 2000,
             easing: Easing.inOut(Easing.ease),
             useNativeDriver: true,
-          }),
+          } as Animated.TimingAnimationConfig),
           Animated.timing(val, {
             toValue: 0,
             duration: 2000,
             easing: Easing.inOut(Easing.ease),
             useNativeDriver: true,
-          }),
+          } as Animated.TimingAnimationConfig),
         ])
       );
 
@@ -166,7 +171,7 @@ export function AnalogClock({ prayers }: AnalogClockProps) {
     makeLoop(moonAnim).start();
   }, [sunAnim, moonAnim]);
 
-  // Tick cada segundo (hora/minuto)
+  // Tick cada segundo
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
@@ -178,7 +183,7 @@ export function AnalogClock({ prayers }: AnalogClockProps) {
 
   // Agujas (24 h para la hora)
   const hourDeg = timeToDegrees24(hours, minutes);
-  const minuteDeg = minutes * 6 + seconds * 0.1; // 0–59 -> 0–360
+  const minuteDeg = minutes * 6 + seconds * 0.1;
 
   // 1) Día / noche dinámicos a partir de Fajr–Maghrib
   const { nightSectorPath, sunDeg, moonDeg } = useMemo(() => {
@@ -197,7 +202,7 @@ export function AnalogClock({ prayers }: AnalogClockProps) {
       dayEndDeg = 18 * 15;
     }
 
-    // noche = sector complementario sobre la cara del reloj
+    // noche = sector complementario sobre la cara del reloj (solo interior)
     const nightSector = createSectorPath(dayEndDeg, dayStartDeg, R_FACE);
 
     // sol en el centro del arco de día
@@ -205,12 +210,17 @@ export function AnalogClock({ prayers }: AnalogClockProps) {
     // luna en el centro del arco de noche
     const moonAngle = midAngle(dayEndDeg, dayStartDeg);
 
-    return { nightSectorPath: nightSector, sunDeg: sunAngle, moonDeg: moonAngle };
+    return {
+      nightSectorPath: nightSector,
+      sunDeg: sunAngle,
+      moonDeg: moonAngle,
+    };
   }, [prayers]);
 
-  // 2) Franjas de cada rezo (anillo exterior sin margen)
+  // 2) Franjas de cada rezo (anillo exterior ocupando el “bisel”)
   const prayerArcs = useMemo(() => {
     const arcs: React.ReactNode[] = [];
+    const palette = PrayerStripeColors[colorScheme];
 
     const sequence = PRAYER_KEYS;
     for (let i = 0; i < sequence.length; i++) {
@@ -224,17 +234,22 @@ export function AnalogClock({ prayers }: AnalogClockProps) {
 
       const startDeg = prayerTimeToDegrees24(current);
       const endDeg = prayerTimeToDegrees24(next);
-      const color = PRAYER_COLORS[currentName];
+      const color = palette[currentName];
 
-      const d = createRingArcPath(startDeg, endDeg, R_ARC_INNER, R_ARC_OUTER);
+      const d = createRingArcPath(
+        startDeg,
+        endDeg,
+        R_ARC_INNER,
+        R_ARC_OUTER
+      );
 
       arcs.push(<Path key={`arc-${currentName}`} d={d} fill={color} />);
     }
 
     return arcs;
-  }, [prayers]);
+  }, [prayers, colorScheme]);
 
-  // 3) Números 00–23 (ya sin ticks, el usuario se orienta con horas)
+  // 3) Números 00–23
   const hourNumbers = useMemo(() => {
     const texts: React.ReactNode[] = [];
     for (let h = 0; h < 24; h++) {
@@ -247,8 +262,8 @@ export function AnalogClock({ prayers }: AnalogClockProps) {
           key={`num-${h}`}
           x={pos.x}
           y={pos.y + 4}
-          fontSize={12}
-          fill={COLORS.text}
+          fontSize={FontSizes.xxs}
+          fill={textColor}
           textAnchor="middle"
         >
           {label}
@@ -256,14 +271,13 @@ export function AnalogClock({ prayers }: AnalogClockProps) {
       );
     }
     return texts;
-  }, []);
+  }, [textColor]);
 
-  // 4) Posiciones de sol y luna (centradas en sus sectores, a radio más corto)
+  // 4) Posiciones de sol y luna
   const sunPos = polarToCartesian(R_ICON_RADIUS, sunDeg);
   const moonPos = polarToCartesian(R_ICON_RADIUS, moonDeg);
   const iconSize = 40;
 
-  // Animaciones de sol y luna (pequeño flotado)
   const sunStyle = {
     transform: [
       {
@@ -299,32 +313,42 @@ export function AnalogClock({ prayers }: AnalogClockProps) {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.clockWrapper, styles.shadow]}>
-        {/* SVG de fondo: cara, noche, franjas y números */}
+    <View className="w-full items-center py-4">
+      <View
+        className="relative"
+        style={[
+          styles.clockWrapper,
+          styles.shadow,
+          { shadowColor: clockColors.shadow },
+        ]}
+      >
+        {/* SVG de fondo: cara, franjas, noche y números */}
         <Svg
           width={CLOCK_SIZE}
           height={CLOCK_SIZE}
           viewBox={`0 0 ${CLOCK_SIZE} ${CLOCK_SIZE}`}
         >
-          {/* Bisel negro */}
-          <Circle cx={CENTER} cy={CENTER} r={R_BEZEL} fill={COLORS.bezel} />
+          {/* Cara interior */}
+          <Circle
+            cx={CENTER}
+            cy={CENTER}
+            r={R_FACE}
+            fill={clockColors.faceBg}
+          />
 
-          {/* Cara blanca base */}
-          <Circle cx={CENTER} cy={CENTER} r={R_FACE} fill={COLORS.faceBg} />
-
-          {/* Sector de noche (oscurece la parte correspondiente) */}
-          <Path d={nightSectorPath} fill={COLORS.nightOverlay} />
-
-          {/* Franjas de cada rezo (anillo exterior sin margen) */}
+          {/* Franjas de cada rezo ocupando el “bisel” exterior */}
           {prayerArcs}
+
+          {/* Sector de noche (oscurece solo la parte interior) */}
+          <Path d={nightSectorPath} fill={clockColors.nightOverlay} />
 
           {/* Números 00–23 */}
           {hourNumbers}
         </Svg>
 
-        {/* Sol y luna como iconos animados, por debajo de las agujas */}
+        {/* Sol */}
         <Animated.View
+          className="absolute"
           style={[
             styles.icon,
             sunStyle,
@@ -334,14 +358,12 @@ export function AnalogClock({ prayers }: AnalogClockProps) {
             },
           ]}
         >
-          <Ionicons
-            name="sunny"
-            size={iconSize}
-            color="#facc15"
-          />
+          <Ionicons name="sunny" size={iconSize} color={clockColors.sun} />
         </Animated.View>
 
+        {/* Luna */}
         <Animated.View
+          className="absolute"
           style={[
             styles.icon,
             moonStyle,
@@ -351,14 +373,10 @@ export function AnalogClock({ prayers }: AnalogClockProps) {
             },
           ]}
         >
-          <Ionicons
-            name="moon"
-            size={iconSize}
-            color="#0f172a"
-          />
+          <Ionicons name="moon" size={iconSize} color={clockColors.moon} />
         </Animated.View>
 
-        {/* SVG superior: solo agujas y pivote central, por encima de sol/luna */}
+        {/* Agujas y pivote central */}
         <Svg
           width={CLOCK_SIZE}
           height={CLOCK_SIZE}
@@ -372,7 +390,7 @@ export function AnalogClock({ prayers }: AnalogClockProps) {
               y1={CENTER}
               x2={CENTER}
               y2={CENTER - R_FACE * 0.6}
-              stroke={COLORS.hourHand}
+              stroke={clockColors.hourHand}
               strokeWidth={4}
               strokeLinecap="round"
             />
@@ -385,14 +403,14 @@ export function AnalogClock({ prayers }: AnalogClockProps) {
               y1={CENTER}
               x2={CENTER}
               y2={CENTER - R_FACE * 0.85}
-              stroke={COLORS.minuteHand}
+              stroke={clockColors.minuteHand}
               strokeWidth={2.5}
               strokeLinecap="round"
             />
           </G>
 
           {/* Pivote central */}
-          <Circle cx={CENTER} cy={CENTER} r={7} fill={COLORS.center} />
+          <Circle cx={CENTER} cy={CENTER} r={7} fill={clockColors.center} />
           <Circle cx={CENTER} cy={CENTER} r={3} fill="#ffffff" />
         </Svg>
       </View>
@@ -401,11 +419,6 @@ export function AnalogClock({ prayers }: AnalogClockProps) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    width: "100%",
-    alignItems: "center",
-    paddingVertical: 16,
-  },
   clockWrapper: {
     width: CLOCK_SIZE,
     height: CLOCK_SIZE,
@@ -414,7 +427,6 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   shadow: {
-    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 10,

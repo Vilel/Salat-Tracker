@@ -5,21 +5,11 @@ import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   ScrollView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-import {
-  fetchPrayerTimesFromAPI,
-  getDefaultLocation,
-  getNextPrayer,
-  type DayPrayers,
-  type LocationData,
-  type PrayerTime,
-} from "@/lib/prayer-times";
 
 import { AnalogClock } from "@/components/AnalogClock";
 import { LanguageSelector } from "@/components/LanguageSelector";
@@ -29,15 +19,31 @@ import {
 } from "@/components/LocationSelector";
 import { NextPrayerDisplay } from "@/components/NextPrayerDisplay";
 import { PrayerTimeline } from "@/components/PrayerTimeline";
-import { Colors, FontSizes } from "@/constants/theme";
+import {
+  Colors,
+  FontSizes,
+  type ColorSchemeName,
+} from "@/constants/theme";
 import { useLanguage } from "@/contexts/language-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import {
+  fetchPrayerTimesFromAPI,
+  getDefaultLocation,
+  getNextPrayer,
+  type DayPrayers,
+  type LocationData,
+  type PrayerTime,
+} from "@/lib/prayer-times";
 
 type LoadingState = "loading" | "success" | "error";
 
 export default function HomeScreen() {
   const { t } = useLanguage();
-  const colorScheme = useColorScheme() ?? "light";
+
+  // Tema light/dark normalizado
+  const rawScheme = useColorScheme();
+  const colorScheme: ColorSchemeName =
+    rawScheme === "dark" ? "dark" : "light";
   const theme = Colors[colorScheme];
 
   const [prayers, setPrayers] = useState<DayPrayers | null>(null);
@@ -47,8 +53,6 @@ export default function HomeScreen() {
   const [errorMessage, setErrorMessage] = useState<string>("");
 
   const [locationMode, setLocationMode] = useState<LocationMode>("auto");
-
-  const styles = makeStyles(theme);
 
   const loadPrayerTimes = useCallback(
     async (loc: LocationData) => {
@@ -146,14 +150,24 @@ export default function HomeScreen() {
     handleLocationModeChange(locationMode);
   };
 
+  const backgroundStyle = { backgroundColor: theme.background };
+
   // --- estados de carga / error ---
 
   if (loadingState === "loading") {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.centerContent}>
+      <SafeAreaView
+        className="flex-1"
+        style={backgroundStyle}
+      >
+        <View className="flex-1 items-center justify-center px-8">
           <ActivityIndicator size="large" color={theme.primary} />
-          <Text style={styles.loadingText}>{t.loading}</Text>
+          <Text
+            className="mt-4 text-center"
+            style={{ fontSize: FontSizes.lg, color: theme.textMuted }}
+          >
+            {t.loading}
+          </Text>
         </View>
       </SafeAreaView>
     );
@@ -161,15 +175,32 @@ export default function HomeScreen() {
 
   if (loadingState === "error") {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.centerContent}>
-          <Text style={styles.errorIcon}>⚠️</Text>
-          <Text style={styles.errorText}>{errorMessage}</Text>
-          <TouchableOpacity
-            style={styles.retryButton}
-            onPress={handleRetry}
+      <SafeAreaView
+        className="flex-1"
+        style={backgroundStyle}
+      >
+        <View className="flex-1 items-center justify-center px-8">
+          <Text style={{ fontSize: 56, marginBottom: 12 }}>⚠️</Text>
+          <Text
+            className="text-center mb-4"
+            style={{ fontSize: FontSizes.lg, color: theme.text }}
           >
-            <Text style={styles.retryButtonText}>{t.retry}</Text>
+            {errorMessage}
+          </Text>
+          <TouchableOpacity
+            onPress={handleRetry}
+            className="flex-row items-center rounded-2xl px-6 py-3"
+            style={{ backgroundColor: theme.primary }}
+          >
+            <Text
+              style={{
+                fontSize: FontSizes.base,
+                fontWeight: "600",
+                color: "#ffffff",
+              }}
+            >
+              {t.retry}
+            </Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -183,14 +214,20 @@ export default function HomeScreen() {
   // --- render normal ---
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      className="flex-1"
+      style={backgroundStyle}
+    >
       <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        className="flex-1"
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingBottom: 16,
+        }}
         showsVerticalScrollIndicator={false}
       >
         {/* Header: selector de ubicación + selector de idioma */}
-        <View style={styles.header}>
+        <View className="flex-row items-center justify-between px-4 pt-3 pb-2 gap-2">
           <LocationSelector
             mode={locationMode}
             city={location?.city}
@@ -200,17 +237,18 @@ export default function HomeScreen() {
           <LanguageSelector />
         </View>
 
-        {/* Contenido principal */}
-        <View style={styles.mainContent}>
+        {/* Contenido principal: próximo rezo + reloj */}
+        <View className="px-4 pt-1 pb-2 items-center">
           <NextPrayerDisplay prayer={nextPrayer} />
+          {/* Menos separación vertical: gap ajustado dentro del propio componente de reloj */}
           <AnalogClock
             prayers={prayers}
             nextPrayer={nextPrayer.name}
           />
         </View>
 
-        {/* Timeline de oraciones */}
-        <View style={styles.timelineContainer}>
+        {/* Timeline de oraciones (más pegado al reloj) */}
+        <View className="px-2 pt-1 pb-4">
           <PrayerTimeline
             prayers={prayers}
             nextPrayer={nextPrayer.name}
@@ -219,76 +257,4 @@ export default function HomeScreen() {
       </ScrollView>
     </SafeAreaView>
   );
-}
-
-function makeStyles(theme: (typeof Colors)["light"]) {
-  return StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: theme.background,
-    },
-    scrollView: {
-      flex: 1,
-    },
-    scrollContent: {
-      flexGrow: 1,
-      paddingBottom: 24,
-    },
-    centerContent: {
-      flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
-      gap: 16,
-      padding: 32,
-    },
-    loadingText: {
-      fontSize: FontSizes.lg,
-      color: theme.textMuted,
-      marginTop: 16,
-    },
-    errorIcon: {
-      fontSize: 64,
-      marginBottom: 16,
-    },
-    errorText: {
-      fontSize: FontSizes.lg,
-      color: theme.text,
-      textAlign: "center",
-    },
-    retryButton: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 12,
-      paddingVertical: 16,
-      paddingHorizontal: 32,
-      backgroundColor: theme.primary,
-      borderRadius: 16,
-      marginTop: 16,
-    },
-    retryButtonText: {
-      fontSize: FontSizes.base,
-      fontWeight: "600",
-      color: "#ffffff",
-    },
-    header: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      paddingHorizontal: 16,
-      paddingVertical: 16,
-      gap: 8,
-    },
-    mainContent: {
-      flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
-      gap: 32,
-      paddingHorizontal: 16,
-      paddingVertical: 24,
-    },
-    timelineContainer: {
-      paddingVertical: 16,
-      paddingHorizontal: 8,
-    },
-  });
 }
