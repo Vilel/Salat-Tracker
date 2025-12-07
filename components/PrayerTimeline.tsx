@@ -195,7 +195,7 @@ export function PrayerTimeline({ prayers, nextPrayer }: PrayerTimelineProps) {
                         opacity: isNext ? 1 : 0.8,
                       }}
                     >
-                      {t.prayers[prayerName].substring(0, 3)}
+                      {t.prayers[prayerName]}
                     </Text>
 
                     {/* Hora */}

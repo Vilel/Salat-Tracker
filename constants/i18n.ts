@@ -44,6 +44,24 @@ export interface Translations {
     using: string;
     default: string;
   };
+  navigation: {
+    home: string;
+    mySalats: string;
+  };
+  mySalats: {
+    title: string;
+    subtitle: string;
+    todaySummary: string;
+    todaySummaryHint: string;
+    pendingRakatsLabel: string;
+    todayPrayers: string;
+    statusDone: string;
+    statusPending: string;
+    historyTitle: string;
+    historySubtitle: string;
+    today: string;
+    yesterday: string;
+  };
 }
 
 // --- Traducciones por idioma (contenido de tus JSON) --- //
@@ -86,6 +104,27 @@ export const es: Translations = {
     using: "Ubicación",
     default: "Ubicación predeterminada",
   },
+  navigation: {
+    home: "Inicio",
+    mySalats: "Mis salats",
+  },
+  mySalats: {
+    title: "Mis salats",
+    subtitle:
+      "Lleva un seguimiento de los rezos que has hecho hoy y de los que te faltan.",
+    todaySummary: "Resumen de hoy",
+    todaySummaryHint:
+      "Marca cada salat como hecho cuando lo hayas rezado.",
+    pendingRakatsLabel: "rak‘ats que quedan hoy",
+    todayPrayers: "Rezos de hoy",
+    statusDone: "Hecho",
+    statusPending: "Pendiente",
+    historyTitle: "Días anteriores",
+    historySubtitle:
+      "Los días pasados están bloqueados. Solo puedes marcar los salats de hoy.",
+    today: "Hoy",
+    yesterday: "Ayer",
+  },
 };
 
 export const en: Translations = {
@@ -125,6 +164,27 @@ export const en: Translations = {
   location: {
     using: "Location",
     default: "Default location",
+  },
+  navigation: {
+    home: "Home",
+    mySalats: "My salats",
+  },
+  mySalats: {
+    title: "My salats",
+    subtitle:
+      "Track which prayers you’ve done today and how many rak‘ats are left.",
+    todaySummary: "Today’s summary",
+    todaySummaryHint:
+      "Mark each prayer as done once you have performed it.",
+    pendingRakatsLabel: "rak‘ats still to pray today",
+    todayPrayers: "Today’s prayers",
+    statusDone: "Done",
+    statusPending: "Pending",
+    historyTitle: "Previous days",
+    historySubtitle:
+      "Past days are locked. You can only mark prayers for today.",
+    today: "Today",
+    yesterday: "Yesterday",
   },
 };
 
@@ -166,6 +226,27 @@ export const fr: Translations = {
     using: "Emplacement",
     default: "Emplacement par défaut",
   },
+  navigation: {
+    home: "Accueil",
+    mySalats: "Mes salats",
+  },
+  mySalats: {
+    title: "Mes salats",
+    subtitle:
+      "Suivez les prières accomplies aujourd’hui et celles qui restent.",
+    todaySummary: "Résumé du jour",
+    todaySummaryHint:
+      "Marquez chaque prière comme faite une fois accomplie.",
+    pendingRakatsLabel: "rak‘ats restant à prier aujourd’hui",
+    todayPrayers: "Prières d’aujourd’hui",
+    statusDone: "Fait",
+    statusPending: "En attente",
+    historyTitle: "Jours précédents",
+    historySubtitle:
+      "Les jours passés sont verrouillés. Vous ne pouvez marquer que les prières d’aujourd’hui.",
+    today: "Aujourd’hui",
+    yesterday: "Hier",
+  },
 };
 
 export const nl: Translations = {
@@ -205,6 +286,27 @@ export const nl: Translations = {
   location: {
     using: "Locatie",
     default: "Standaard locatie",
+  },
+  navigation: {
+    home: "Start",
+    mySalats: "Mijn gebeden",
+  },
+  mySalats: {
+    title: "Mijn gebeden",
+    subtitle:
+      "Houd bij welke gebeden je vandaag hebt verricht en hoeveel rak‘ats er nog over zijn.",
+    todaySummary: "Overzicht van vandaag",
+    todaySummaryHint:
+      "Markeer elk gebed als voltooid zodra je het hebt verricht.",
+    pendingRakatsLabel: "rak‘ats die vandaag nog moeten",
+    todayPrayers: "Gebeden van vandaag",
+    statusDone: "Gedaan",
+    statusPending: "Open",
+    historyTitle: "Eerdere dagen",
+    historySubtitle:
+      "Afgelopen dagen zijn vergrendeld. Je kunt alleen de gebeden van vandaag markeren.",
+    today: "Vandaag",
+    yesterday: "Gisteren",
   },
 };
 
