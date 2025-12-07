@@ -5,7 +5,6 @@ import { Text, View } from "react-native";
 
 import {
   Colors,
-  FontSizes,
   PrayerStripeColors,
   type ColorSchemeName,
 } from "@/constants/theme";
@@ -30,13 +29,13 @@ const PRAYER_ORDER: PrayerName[] = [
   "isha",
 ];
 
+// Convierte hora:minuto a minutos totales del día
 function toMinutes(hour: number, minute: number, second: number = 0) {
   return hour * 60 + minute + second / 60;
 }
 
 export function PrayerTimeline({ prayers, nextPrayer }: PrayerTimelineProps) {
   const { t } = useLanguage();
-
   const [now, setNow] = useState(new Date());
 
   const rawScheme = useColorScheme();
@@ -45,8 +44,9 @@ export function PrayerTimeline({ prayers, nextPrayer }: PrayerTimelineProps) {
   const theme = Colors[colorScheme];
   const stripeColors = PrayerStripeColors[colorScheme];
 
-  // Reloj interno: actualizamos cada segundo
+  // Actualizar reloj cada segundo
   useEffect(() => {
+    setNow(new Date());
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
@@ -57,20 +57,18 @@ export function PrayerTimeline({ prayers, nextPrayer }: PrayerTimelineProps) {
     now.getSeconds()
   );
 
-  // Construimos la lista de rezos con sus tiempos (en minutos) y su posición horizontal (0–1)
+  // --- LÓGICA DE LA LÍNEA DE TIEMPO ---
+
+  // Puntos del timeline con minutos y posición 0–1
   const timelinePoints = PRAYER_ORDER.map((name, idx) => {
     const data = prayers[name];
     if (!data) return null;
 
     const minutes = toMinutes(data.hour, data.minute);
-    const pos = PRAYER_ORDER.length === 1 ? 0 : idx / (PRAYER_ORDER.length - 1);
+    const pos =
+      PRAYER_ORDER.length === 1 ? 0 : idx / (PRAYER_ORDER.length - 1);
 
-    return {
-      name,
-      data,
-      minutes,
-      pos, // posición horizontal del punto
-    };
+    return { name, data, minutes, pos };
   }).filter(Boolean) as {
     name: PrayerName;
     data: { hour: number; minute: number };
@@ -78,31 +76,30 @@ export function PrayerTimeline({ prayers, nextPrayer }: PrayerTimelineProps) {
     pos: number;
   }[];
 
-  // Cálculo del progreso sobre la línea:
-  // - Antes del primer rezo: empieza en el primer punto
-  // - Entre dos rezos: interpolación lineal entre sus posiciones
-  // - Después del último rezo: termina en el último punto
-  let progressPos = 0; // 0–1
+  // Progreso global (0–1) a lo largo de los puntos
+  let progressPos = 0;
 
   if (timelinePoints.length > 0) {
     const first = timelinePoints[0];
     const last = timelinePoints[timelinePoints.length - 1];
 
     if (nowMinutes <= first.minutes) {
-      progressPos = first.pos;
+      progressPos = 0;
     } else if (nowMinutes >= last.minutes) {
-      progressPos = last.pos;
+      progressPos = 1;
     } else {
       for (let i = 0; i < timelinePoints.length - 1; i++) {
-        const a = timelinePoints[i];
-        const b = timelinePoints[i + 1];
+        const currentP = timelinePoints[i];
+        const nextP = timelinePoints[i + 1];
 
-        if (nowMinutes >= a.minutes && nowMinutes <= b.minutes) {
-          const segmentTotal = b.minutes - a.minutes || 1;
-          const segmentProgress = (nowMinutes - a.minutes) / segmentTotal;
+        if (nowMinutes >= currentP.minutes && nowMinutes <= nextP.minutes) {
+          const timeRange = nextP.minutes - currentP.minutes || 1;
+          const timeElapsed = nowMinutes - currentP.minutes;
+          const segmentProgress = timeElapsed / timeRange;
 
+          const distanceBetweenDots = nextP.pos - currentP.pos;
           progressPos =
-            a.pos + (b.pos - a.pos) * segmentProgress;
+            currentP.pos + distanceBetweenDots * segmentProgress;
           break;
         }
       }
@@ -110,87 +107,117 @@ export function PrayerTimeline({ prayers, nextPrayer }: PrayerTimelineProps) {
   }
 
   return (
-    <View className="w-full px-4">
+    <View className="w-full">
       <View
-        className="rounded-3xl px-4 py-3 shadow-sm border flex-col gap-3"
+        className="rounded-3xl px-4 py-4 shadow-sm border"
         style={{
           backgroundColor: theme.card,
           borderColor: theme.border,
         }}
       >
-        {/* Barra de progreso */}
-        <View className="w-full h-1.5 rounded-full overflow-hidden mb-1 relative">
-          {/* Fondo */}
+        <View className="relative">
+          {/* --- BARRA DE FONDO --- */}
           <View
-            className="h-full"
+            className="absolute left-0 right-0 h-1 rounded-full"
             style={{
-              backgroundColor: theme.border,
-              opacity: 0.5,
+              top: 6,
+              backgroundColor:
+                colorScheme === "dark" ? "#374151" : "#e5e7eb",
             }}
           />
-          {/* Progreso que avanza “debajo” de los puntos */}
+
+          {/* --- BARRA DE PROGRESO (hasta el rezo actual) --- */}
           <View
-            className="h-full absolute left-0 top-0"
+            className="absolute left-0 h-1 rounded-full"
             style={{
+              top: 6,
               width: `${progressPos * 100}%`,
               backgroundColor: theme.primary,
             }}
           />
-        </View>
 
-        {/* Puntos de los rezos */}
-        <View className="flex-row justify-between gap-1">
-          {PRAYER_ORDER.map((prayerName) => {
-            const prayerData = prayers[prayerName];
-            if (!prayerData) return null;
+          {/* --- PUNTOS + TEXTOS --- */}
+          <View className="flex-row justify-between w-full">
+            {PRAYER_ORDER.map((prayerName) => {
+              const prayerData = prayers[prayerName];
+              if (!prayerData) return null;
 
-            const dotColor = stripeColors[prayerName];
-            const isNext = prayerName === nextPrayer;
+              const minutes = toMinutes(
+                prayerData.hour,
+                prayerData.minute
+              );
 
-            return (
-              <View
-                key={prayerName}
-                className="flex-1 items-center gap-[2px]"
-              >
-                {/* Punto de color (no cambiamos color, solo un pequeño halo para el siguiente) */}
+              const isCompleted = nowMinutes >= minutes;
+              const isNext = prayerName === nextPrayer;
+
+              const dotColor =
+                stripeColors[prayerName] || theme.primary;
+
+              return (
                 <View
-                  className="w-3 h-3 rounded-full mb-[2px]"
-                  style={{
-                    backgroundColor: dotColor,
-                    borderWidth: isNext ? 2 : 0,
-                    borderColor: isNext ? theme.primary : "transparent",
-                  }}
-                />
-
-                {/* Nombre del rezo */}
-                <Text
-                  className="text-center uppercase"
-                  numberOfLines={1}
-                  style={{
-                    fontSize: FontSizes.xxs, // más pequeño
-                    fontWeight: "600",
-                    color: isNext ? theme.primary : theme.text,
-                  }}
+                  key={prayerName}
+                  className="items-center z-10"
                 >
-                  {t.prayers[prayerName]}
-                </Text>
+                  {/* Círculo exterior que se resalta cuando ya ha ocurrido */}
+                  <View
+                    className="items-center justify-center rounded-full mb-2"
+                    style={{
+                      width: 18,
+                      height: 18,
+                      backgroundColor: theme.card,
+                      borderWidth: isCompleted ? 2 : 0,
+                      borderColor: isCompleted
+                        ? theme.primary
+                        : "transparent",
+                    }}
+                  >
+                    {/* Punto de color del rezo */}
+                    <View
+                      className="rounded-full"
+                      style={{
+                        width: 10,
+                        height: 10,
+                        backgroundColor: dotColor,
+                      }}
+                    />
+                  </View>
 
-                {/* Hora */}
-                <Text
-                  className="text-center"
-                  numberOfLines={1}
-                  style={{
-                    fontSize: 12, // un poco menos que xs
-                    fontWeight: "500",
-                    color: theme.text,
-                    opacity: 0.9,
-                  }}
-                >
-                  {formatTime(prayerData.hour, prayerData.minute)}
-                </Text>
-              </View>
-            );
-          })}
+                  {/* Etiquetas */}
+                  <View className="items-center gap-[1px]">
+                    {/* Nombre del rezo (abreviado) */}
+                    <Text
+                      className="uppercase text-center"
+                      numberOfLines={1}
+                      style={{
+                        fontSize: 10,
+                        fontWeight: isNext ? "800" : "600",
+                        color: isNext ? theme.text : theme.textMuted,
+                        opacity: isNext ? 1 : 0.8,
+                      }}
+                    >
+                      {t.prayers[prayerName].substring(0, 3)}
+                    </Text>
+
+                    {/* Hora */}
+                    <Text
+                      className="text-center"
+                      numberOfLines={1}
+                      style={{
+                        fontSize: 11,
+                        fontWeight: isNext ? "700" : "400",
+                        color: isNext ? theme.text : theme.textMuted,
+                      }}
+                    >
+                      {formatTime(
+                        prayerData.hour,
+                        prayerData.minute
+                      )}
+                    </Text>
+                  </View>
+                </View>
+              );
+            })}
+          </View>
         </View>
       </View>
     </View>

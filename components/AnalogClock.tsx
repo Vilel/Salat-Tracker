@@ -313,7 +313,7 @@ export function AnalogClock({ prayers }: AnalogClockProps) {
   };
 
   return (
-    <View className="w-full items-center py-4">
+    <View className="w-full items-center">
       <View
         className="relative"
         style={[

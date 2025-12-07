@@ -8,7 +8,6 @@
     "scheme": "salatapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.salat.prayerapp",
@@ -16,7 +15,6 @@
         "NSLocationWhenInUseUsageDescription": "We need your location to calculate accurate prayer times for your area."
       }
     },
-
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
@@ -32,13 +30,11 @@
         "ACCESS_COARSE_LOCATION"
       ]
     },
-
     "web": {
       "output": "static",
       "favicon": "./assets/images/favicon.png",
       "bundler": "metro"
     },
-
     "plugins": [
       "expo-router",
       [
@@ -59,9 +55,9 @@
           "locationWhenInUsePermission": "We need your location to calculate accurate prayer times for your area."
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      "expo-web-browser"
     ],
-
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true

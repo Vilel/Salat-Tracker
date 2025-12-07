@@ -40,7 +40,6 @@ type LoadingState = "loading" | "success" | "error";
 export default function HomeScreen() {
   const { t } = useLanguage();
 
-  // Tema light/dark normalizado
   const rawScheme = useColorScheme();
   const colorScheme: ColorSchemeName =
     rawScheme === "dark" ? "dark" : "light";
@@ -220,39 +219,39 @@ export default function HomeScreen() {
     >
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{
-          flexGrow: 1,
-          paddingBottom: 16,
-        }}
+        contentContainerStyle={{ flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header: selector de ubicación + selector de idioma */}
-        <View className="flex-row items-center justify-between px-4 pt-3 pb-2 gap-2">
-          <LocationSelector
-            mode={locationMode}
-            city={location?.city}
-            country={location?.country}
-            onChangeMode={setLocationMode}
-          />
-          <LanguageSelector />
-        </View>
+        <View className="flex-1 px-4 py-4">
+          {/* Esta columna ocupa todo el alto y reparte el espacio
+              de forma uniforme entre los 4 bloques */}
+          <View className="flex-1 justify-between">
+            {/* Header: selector de ubicación + selector de idioma */}
+            <View className="flex-row items-center justify-between gap-2">
+              <LocationSelector
+                mode={locationMode}
+                city={location?.city}
+                country={location?.country}
+                onChangeMode={setLocationMode}
+              />
+              <LanguageSelector />
+            </View>
 
-        {/* Contenido principal: próximo rezo + reloj */}
-        <View className="px-4 pt-1 pb-2 items-center">
-          <NextPrayerDisplay prayer={nextPrayer} />
-          {/* Menos separación vertical: gap ajustado dentro del propio componente de reloj */}
-          <AnalogClock
-            prayers={prayers}
-            nextPrayer={nextPrayer.name}
-          />
-        </View>
+            {/* Próximo rezo */}
+            <NextPrayerDisplay prayer={nextPrayer} />
 
-        {/* Timeline de oraciones (más pegado al reloj) */}
-        <View className="px-2 pt-1 pb-4">
-          <PrayerTimeline
-            prayers={prayers}
-            nextPrayer={nextPrayer.name}
-          />
+            {/* Reloj analógico */}
+            <AnalogClock
+              prayers={prayers}
+              nextPrayer={nextPrayer.name}
+            />
+
+            {/* Timeline */}
+            <PrayerTimeline
+              prayers={prayers}
+              nextPrayer={nextPrayer.name}
+            />
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>

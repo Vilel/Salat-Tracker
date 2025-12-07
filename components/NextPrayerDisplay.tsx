@@ -1,3 +1,5 @@
+// components/NextPrayerDisplay.tsx
+
 import {
   Colors,
   FontSizes,
@@ -50,7 +52,7 @@ export function NextPrayerDisplay({ prayer }: NextPrayerDisplayProps) {
   const formatDigit = (num: number) => num.toString().padStart(2, '0');
 
   return (
-    <View className="w-full px-4 my-2">
+    <View className="w-full">
       <View
         className="w-full rounded-[32px] overflow-hidden relative"
         style={{
