@@ -47,6 +47,7 @@ export interface Translations {
   navigation: {
     home: string;
     mySalats: string;
+    qada: string;
   };
   mySalats: {
     title: string;
@@ -62,9 +63,25 @@ export interface Translations {
     today: string;
     yesterday: string;
   };
+  qada: {
+    title: string;
+    subtitle: string;
+    summaryTitle: string;
+    summaryDetailsTitle: string;
+    netNegativeLabel: string;
+    netPositiveLabel: string;
+    netZeroLabel: string;
+    missedLabel: string;
+    clearedLabel: string;
+    inputLabel: string;
+    inputPlaceholder: string;
+    registerButton: string;
+    historyTitle: string;
+    historyEmpty: string;
+  };
 }
 
-// --- Traducciones por idioma (contenido de tus JSON) --- //
+// --- Traducciones por idioma --- //
 
 export const es: Translations = {
   app: {
@@ -107,6 +124,7 @@ export const es: Translations = {
   navigation: {
     home: "Inicio",
     mySalats: "Mis salats",
+    qada: "Qadá",
   },
   mySalats: {
     title: "Mis salats",
@@ -124,6 +142,24 @@ export const es: Translations = {
       "Los días pasados están bloqueados. Solo puedes marcar los salats de hoy.",
     today: "Hoy",
     yesterday: "Ayer",
+  },
+  qada: {
+    title: "Qadá y histórico",
+    subtitle:
+      "Rak‘ats pendientes de días pasados y registro de qadá.",
+    summaryTitle: "Balance global",
+    summaryDetailsTitle: "Resumen",
+    netNegativeLabel: "Rak‘ats pendientes",
+    netPositiveLabel: "Rak‘ats extra realizados",
+    netZeroLabel: "Sin deuda pendiente",
+    missedLabel: "rak‘ats omitidos",
+    clearedLabel: "rak‘ats de qadá rezados",
+    inputLabel: "Añadir rak‘ats de qadá que has rezado hoy:",
+    inputPlaceholder: "Ej. 4",
+    registerButton: "Registrar",
+    historyTitle: "Histórico de salats (días con registro)",
+    historyEmpty:
+      "Todavía no hay días anteriores registrados. Los días se guardan automáticamente cuando marcas algún salat.",
   },
 };
 
@@ -168,6 +204,7 @@ export const en: Translations = {
   navigation: {
     home: "Home",
     mySalats: "My salats",
+    qada: "Qadā",
   },
   mySalats: {
     title: "My salats",
@@ -185,6 +222,23 @@ export const en: Translations = {
       "Past days are locked. You can only mark prayers for today.",
     today: "Today",
     yesterday: "Yesterday",
+  },
+  qada: {
+    title: "Qadā & history",
+    subtitle: "Past-days rak‘ats and your qadā progress.",
+    summaryTitle: "Overall balance",
+    summaryDetailsTitle: "Summary",
+    netNegativeLabel: "Rak‘ats pending",
+    netPositiveLabel: "Extra rak‘ats completed",
+    netZeroLabel: "No debt remaining",
+    missedLabel: "rak‘ats missed",
+    clearedLabel: "qadā rak‘ats completed",
+    inputLabel: "Add qadā rak‘ats you performed today:",
+    inputPlaceholder: "e.g. 4",
+    registerButton: "Save",
+    historyTitle: "Prayer history (days with data)",
+    historyEmpty:
+      "No previous days recorded yet. Days are saved automatically when you mark any salat.",
   },
 };
 
@@ -229,6 +283,7 @@ export const fr: Translations = {
   navigation: {
     home: "Accueil",
     mySalats: "Mes salats",
+    qada: "Qadā",
   },
   mySalats: {
     title: "Mes salats",
@@ -237,7 +292,8 @@ export const fr: Translations = {
     todaySummary: "Résumé du jour",
     todaySummaryHint:
       "Marquez chaque prière comme faite une fois accomplie.",
-    pendingRakatsLabel: "rak‘ats restant à prier aujourd’hui",
+    pendingRakatsLabel:
+      "rak‘ats restant à prier aujourd’hui",
     todayPrayers: "Prières d’aujourd’hui",
     statusDone: "Fait",
     statusPending: "En attente",
@@ -246,6 +302,26 @@ export const fr: Translations = {
       "Les jours passés sont verrouillés. Vous ne pouvez marquer que les prières d’aujourd’hui.",
     today: "Aujourd’hui",
     yesterday: "Hier",
+  },
+  qada: {
+    title: "Qadā et historique",
+    subtitle:
+      "Rak‘ats en retard des jours passés et suivi de votre qadā.",
+    summaryTitle: "Balance globale",
+    summaryDetailsTitle: "Résumé",
+    netNegativeLabel: "Rak‘ats en retard",
+    netPositiveLabel: "Rak‘ats supplémentaires accomplis",
+    netZeroLabel: "Aucune dette restante",
+    missedLabel: "rak‘ats manqués",
+    clearedLabel: "rak‘ats de qadā accomplis",
+    inputLabel:
+      "Ajouter les rak‘ats de qadā accomplis aujourd’hui :",
+    inputPlaceholder: "Ex. 4",
+    registerButton: "Enregistrer",
+    historyTitle:
+      "Historique des prières (jours enregistrés)",
+    historyEmpty:
+      "Aucun jour précédent enregistré pour l’instant. Les jours sont sauvegardés automatiquement lorsque vous marquez un salat.",
   },
 };
 
@@ -290,6 +366,7 @@ export const nl: Translations = {
   navigation: {
     home: "Start",
     mySalats: "Mijn gebeden",
+    qada: "Qadā",
   },
   mySalats: {
     title: "Mijn gebeden",
@@ -298,7 +375,8 @@ export const nl: Translations = {
     todaySummary: "Overzicht van vandaag",
     todaySummaryHint:
       "Markeer elk gebed als voltooid zodra je het hebt verricht.",
-    pendingRakatsLabel: "rak‘ats die vandaag nog moeten",
+    pendingRakatsLabel:
+      "rak‘ats die vandaag nog moeten",
     todayPrayers: "Gebeden van vandaag",
     statusDone: "Gedaan",
     statusPending: "Open",
@@ -307,6 +385,26 @@ export const nl: Translations = {
       "Afgelopen dagen zijn vergrendeld. Je kunt alleen de gebeden van vandaag markeren.",
     today: "Vandaag",
     yesterday: "Gisteren",
+  },
+  qada: {
+    title: "Qadā en historiek",
+    subtitle:
+      "Gemiste rak‘ats van eerdere dagen en je qadā-voortgang.",
+    summaryTitle: "Totaalbalans",
+    summaryDetailsTitle: "Overzicht",
+    netNegativeLabel: "Openstaande rak‘ats",
+    netPositiveLabel: "Extra rak‘ats voltooid",
+    netZeroLabel: "Geen schuld meer",
+    missedLabel: "gemiste rak‘ats",
+    clearedLabel: "qadā-rak‘ats voltooid",
+    inputLabel:
+      "Voeg het aantal qadā-rak‘ats toe dat je vandaag hebt verricht:",
+    inputPlaceholder: "Bijv. 4",
+    registerButton: "Opslaan",
+    historyTitle:
+      "Gebedsgeschiedenis (dagen met gegevens)",
+    historyEmpty:
+      "Er zijn nog geen eerdere dagen geregistreerd. Dagen worden automatisch opgeslagen wanneer je een salat markeert.",
   },
 };
 
