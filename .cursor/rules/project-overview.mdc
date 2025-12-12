@@ -1,0 +1,14 @@
+---
+alwaysApply: true
+---
+This repository is an Expo (SDK ~54) + React Native app using:
+- expo-router (file-based routing) with typed routes enabled
+- TypeScript (strict) with @/* path alias
+- NativeWind (Tailwind) for styling
+- AsyncStorage for persistence
+- expo-location + reverse geocoding for location
+- Internationalization via LanguageProvider + expo-localization
+- react-native-svg, Reanimated and Lottie for visuals/animations
+- External API: Aladhan Prayer Times
+
+Goal: make incremental, low-risk changes that match existing patterns.

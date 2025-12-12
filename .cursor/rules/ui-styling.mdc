@@ -1,0 +1,11 @@
+---
+globs: app/**,components/**
+alwaysApply: false
+---
+UI & styling rules (app/ and components/):
+
+- Use NativeWind/Tailwind classes where the project already does.
+- Use existing theme primitives from constants/theme (Colors, FontSizes, etc.).
+- Avoid introducing new styling systems or UI libraries without explicit approval.
+- Prefer consistent spacing and typography; keep contrast/accessibility in mind.
+- Use inline styles only when needed (platform-specific cases, animated values, shadows).

@@ -1,0 +1,13 @@
+---
+alwaysApply: true
+---
+Follow these folder conventions:
+
+- app/: expo-router routes and screens. Preserve routing structure and conventions.
+- components/: reusable UI components.
+- hooks/: reusable hooks.
+- lib/: pure logic modules (API calls, calculations, storage helpers). No UI here.
+- constants/: theme, i18n, static configuration.
+
+Do NOT create new top-level folders without explicit request.
+Prefer reusing existing patterns and files over introducing new ones.

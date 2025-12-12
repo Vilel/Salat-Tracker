@@ -1,0 +1,75 @@
+# ----------------------------
+# Dependencies / package managers
+# ----------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ----------------------------
+# Expo / React Native generated
+# ----------------------------
+.expo/
+.expo-shared/
+expo-env.d.ts
+*.jks
+*.keystore
+*.p8
+*.p12
+*.mobileprovision
+*.cer
+
+# Android / iOS native folders (if they exist / when prebuilding)
+android/
+ios/
+
+# Build outputs
+dist/
+build/
+web-build/
+.out/
+.next/
+coverage/
+
+# Metro / bundler caches
+.metro-cache/
+.cache/
+*.pack
+*.map
+
+# ----------------------------
+# Logs
+# ----------------------------
+*.log
+
+# ----------------------------
+# Secrets / env (keep .env.example readable)
+# ----------------------------
+.env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+.env.development
+# NOTE: do NOT ignore .env.example
+
+# Keys / certs
+*.pem
+*.key
+
+# ----------------------------
+# Editor / OS noise
+# ----------------------------
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ----------------------------
+# Cursor/AI internal (optional)
+# ----------------------------
+.cursor/mcp.json
+.cursor/mcp.local.json

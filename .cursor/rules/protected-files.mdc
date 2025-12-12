@@ -1,0 +1,13 @@
+---
+alwaysApply: true
+---
+Do NOT modify these files unless I explicitly ask:
+- app.json, eas.json
+- babel.config.js, metro.config.js, tailwind.config.js
+- package.json and lockfiles
+- any .env files and secrets
+
+If you believe a change is necessary:
+- explain why,
+- describe the impact,
+- and wait for my approval before editing.

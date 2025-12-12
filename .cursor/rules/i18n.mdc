@@ -1,0 +1,10 @@
+---
+globs: contexts/**,constants/**
+alwaysApply: false
+---
+i18n rules:
+
+- Use the existing LanguageProvider and TRANSLATIONS map.
+- Do not hardcode user-facing strings when a translation key exists.
+- Keep translation shapes consistent across locales (same keys for all languages).
+- When adding new UI text, add it to all locales and keep wording concise.

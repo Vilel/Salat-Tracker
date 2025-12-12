@@ -1,0 +1,18 @@
+---
+globs: app/**,components/**
+alwaysApply: false
+---
+UI consistency rules (design system):
+
+All UI components must follow a single, coherent visual system.
+
+Use these project primitives:
+- Colors and typography from constants/theme (Colors, FontSizes).
+- NativeWind/Tailwind for spacing, layout, radii and sizing.
+- Consistent spacing scale (prefer Tailwind spacing classes; avoid ad-hoc numbers).
+- Consistent corner radius (prefer the same rounded values across cards/buttons).
+- Consistent shadows (use the same shadow approach across surfaces).
+- Consistent press/hover feedback (opacity or subtle background change).
+
+Do NOT introduce one-off visual styles per component.
+Before adding a new style pattern, reuse an existing component/pattern or propose a shared primitive.

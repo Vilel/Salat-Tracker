@@ -1,0 +1,10 @@
+---
+globs: lib/**,contexts/**
+alwaysApply: false
+---
+AsyncStorage rules:
+
+- Keep storage keys centralized and versioned (e.g. @salat_tracker_v1).
+- Always guard JSON.parse with try/catch and validate shapes.
+- Avoid frequent writes inside tight loops; batch updates when possible.
+- Do not store sensitive data (tokens, secrets) in AsyncStorage.

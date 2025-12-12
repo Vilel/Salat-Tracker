@@ -1,0 +1,11 @@
+---
+globs: hooks/**,lib/**
+alwaysApply: false
+---
+hooks/ and lib/ rules:
+
+- Keep functions small, typed, and testable.
+- Avoid UI concerns (no View/Text/StyleSheet) in lib/.
+- Prefer pure helpers in lib/ and React hooks in hooks/.
+- Handle error cases explicitly (network failures, missing data, parse errors).
+- Do not store secrets in code or in storage keys.

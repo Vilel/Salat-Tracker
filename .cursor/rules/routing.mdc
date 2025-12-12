@@ -1,0 +1,11 @@
+---
+globs: app/**
+alwaysApply: false
+---
+expo-router rules (app/ only):
+
+- Keep screens minimal: UI + orchestration only.
+- Extract reusable UI into components/.
+- Extract non-UI logic into hooks/ or lib/.
+- Do not change route paths, layout structure, or navigation patterns unless explicitly requested.
+- Prefer typed routes and correct hrefs; do not invent routes that do not exist.
