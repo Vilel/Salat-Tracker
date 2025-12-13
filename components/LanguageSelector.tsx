@@ -10,8 +10,10 @@ import {
   View,
 } from "react-native";
 
+import { Card } from "@/components/ui/Card";
+import { ThemedText } from "@/components/ui/ThemedText";
 import type { Locale } from "@/constants/i18n";
-import { Colors, FontSizes, type ColorSchemeName } from "@/constants/theme";
+import { Colors, type ColorSchemeName } from "@/constants/theme";
 import { useLanguage } from "@/contexts/language-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 
@@ -59,15 +61,13 @@ export function LanguageSelector() {
       >
         <Text style={{ fontSize: 18, marginRight: 8 }}>{current.flag}</Text>
 
-        <Text
+        <ThemedText
+          variant="small"
           className="font-semibold mr-2"
-          style={{
-            fontSize: FontSizes.sm,
-            color: theme.text,
-          }}
+          style={{ fontWeight: "600" }}
         >
           {current.code.toUpperCase()}
-        </Text>
+        </ThemedText>
 
         <Ionicons
           name="chevron-down"
@@ -84,80 +84,72 @@ export function LanguageSelector() {
         animationType="fade"
         onRequestClose={() => setOpen(false)}
       >
-        {/* Backdrop: al pulsar aquí se cierra */}
+        {/* Backdrop */}
         <Pressable
           className="flex-1 justify-center items-center"
           style={{ backgroundColor: "rgba(0,0,0,0.4)" }}
           onPress={() => setOpen(false)}
         >
-          {/* Contenido del modal (evita cerrar al tocar dentro) */}
-          <Pressable
-            onPress={stopPressPropagation}
-            className="w-[280px] rounded-3xl overflow-hidden shadow-xl"
-            style={{
-              backgroundColor: theme.card,
-              borderWidth: 1,
-              borderColor: theme.border,
-            }}
-          >
-            {/* Header del modal */}
-            <View
-              className="px-5 py-4 border-b"
-              style={{ borderBottomColor: theme.border }}
+          {/* Contenido del modal */}
+          <Pressable onPress={stopPressPropagation}>
+            <Card
+              variant="elevated"
+              className="w-[280px] rounded-3xl overflow-hidden p-0"
+              style={{ padding: 0 }}
             >
-              <Text
-                className="font-bold text-center"
-                style={{ color: theme.text, fontSize: FontSizes.base }}
+              {/* Header del modal */}
+              <View
+                className="px-5 py-4 border-b"
+                style={{ borderBottomColor: theme.border }}
               >
-                {/* usamos el texto de ajustes > idioma */}
-                {t.settings.language}
-              </Text>
-            </View>
+                <ThemedText variant="default" className="font-bold text-center">
+                  {t.settings.language}
+                </ThemedText>
+              </View>
 
-            {/* Lista de opciones */}
-            <View className="py-2">
-              {LOCALES.map((l) => {
-                const isActive = l.code === locale;
-                return (
-                  <Pressable
-                    key={l.code}
-                    onPress={() => handleSelect(l.code)}
-                    className="flex-row items-center px-5 py-3 mx-2 rounded-xl mb-1"
-                    style={({ pressed }) => ({
-                      backgroundColor: isActive
-                        ? theme.primary + "22" // leve resaltado
-                        : pressed
-                        ? theme.background
-                        : "transparent",
-                    })}
-                  >
-                    <Text style={{ fontSize: 24, marginRight: 16 }}>
-                      {l.flag}
-                    </Text>
-
-                    <View className="flex-1">
-                      <Text
-                        className="font-medium"
-                        style={{
-                          fontSize: FontSizes.base,
-                          color: isActive ? theme.primary : theme.text,
-                        }}
-                      >
-                        {t.languages[l.code]}
+              {/* Lista de opciones */}
+              <View className="py-2">
+                {LOCALES.map((l) => {
+                  const isActive = l.code === locale;
+                  return (
+                    <Pressable
+                      key={l.code}
+                      onPress={() => handleSelect(l.code)}
+                      className="flex-row items-center px-5 py-3 mx-2 rounded-xl mb-1"
+                      style={({ pressed }) => ({
+                        backgroundColor: isActive
+                          ? theme.primary + "22" // leve resaltado
+                          : pressed
+                          ? theme.background
+                          : "transparent",
+                      })}
+                    >
+                      <Text style={{ fontSize: 24, marginRight: 16 }}>
+                        {l.flag}
                       </Text>
-                    </View>
 
-                    {isActive && (
-                      <Ionicons
-                        name="checkmark-circle"
-                        size={20}
-                        color={theme.primary}
-                      />
-                    )}
-                  </Pressable>
-                );
-              })}
-            </View>
+                      <View className="flex-1">
+                        <ThemedText
+                          variant="default"
+                          className="font-medium"
+                          color={isActive ? theme.primary : theme.text}
+                        >
+                          {t.languages[l.code]}
+                        </ThemedText>
+                      </View>
+
+                      {isActive && (
+                        <Ionicons
+                          name="checkmark-circle"
+                          size={20}
+                          color={theme.primary}
+                        />
+                      )}
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </Card>
           </Pressable>
         </Pressable>
       </Modal>

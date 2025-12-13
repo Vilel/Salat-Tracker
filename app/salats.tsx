@@ -1,16 +1,14 @@
-// app/salats.tsx
-
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  ScrollView,
-  Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
+import { Card } from "@/components/ui/Card";
+import { ScreenLayout } from "@/components/ui/ScreenLayout";
+import { ThemedText } from "@/components/ui/ThemedText";
 import {
   Colors,
   FontSizes,
@@ -54,20 +52,6 @@ export default function SalatsScreen() {
 
   const [tracker, setTracker] = useState<TrackerStore>({});
   const [loading, setLoading] = useState(true);
-
-  const backgroundStyle = { backgroundColor: theme.background };
-
-  const cardStyle = {
-    backgroundColor: theme.card,
-    borderColor: theme.border,
-    borderWidth: 1,
-    borderRadius: 24,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 3,
-  };
 
   const todayKey = getDateKey(new Date());
 
@@ -132,304 +116,247 @@ export default function SalatsScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView
-        className="flex-1 items-center justify-center"
-        style={backgroundStyle}
-      >
-        <ActivityIndicator size="large" color={theme.primary} />
-      </SafeAreaView>
+      <ScreenLayout scrollable={false}>
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color={theme.primary} />
+        </View>
+      </ScreenLayout>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1" style={backgroundStyle}>
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{
-          paddingHorizontal: 20,
-          paddingTop: 10,
-          paddingBottom: 40,
-        }}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* HEADER (sin icono a la derecha) */}
-        <View className="mb-6 mt-2">
-          <Text
-            className="font-extrabold"
-            style={{
-              fontSize: 28,
-              color: theme.text,
-              letterSpacing: -0.5,
-            }}
-          >
-            {t.mySalats.title}
-          </Text>
-          <Text
-            style={{
-              fontSize: FontSizes.sm,
-              color: theme.textMuted,
-              marginTop: 4,
-            }}
-          >
-            {t.mySalats.subtitle}
-          </Text>
-        </View>
+    <ScreenLayout contentContainerStyle={{ paddingBottom: 40 }}>
+      {/* HEADER (sin icono a la derecha) */}
+      <View className="mb-6 mt-2">
+        <ThemedText variant="title" style={{ letterSpacing: -0.5, fontSize: 28 }}>
+          {t.mySalats.title}
+        </ThemedText>
+        <ThemedText variant="default" color={theme.textMuted} className="mt-1">
+          {t.mySalats.subtitle}
+        </ThemedText>
+      </View>
 
-        {/* HERO CARD: RESUMEN DE HOY */}
-        <View style={cardStyle} className="p-5 mb-6">
-          <View className="flex-row justify-between items-start mb-4">
-            <View>
-              <Text
-                className="text-sm font-semibold uppercase opacity-60"
-                style={{ color: theme.text }}
-              >
-                {t.mySalats.todaySummary}
-              </Text>
-              <Text
-                className="text-4xl font-black mt-1"
-                style={{ color: theme.text }}
-              >
-                {completionPercentage}%
-              </Text>
-              <Text
-                className="text-xs mt-1"
-                style={{ color: theme.textMuted }}
-              >
-                {t.mySalats.todaySummaryHint}
-              </Text>
-            </View>
-
-            <View className="items-end">
-              <View className="flex-row items-baseline">
-                <Text
-                  className="text-2xl font-bold"
-                  style={{ color: theme.primary }}
-                >
-                  {doneRakats}
-                </Text>
-                <Text
-                  className="text-sm font-medium ml-1"
-                  style={{ color: theme.textMuted }}
-                >
-                  / {totalRakats}
-                </Text>
-              </View>
-              <Text
-                className="text-xs"
-                style={{ color: theme.textMuted }}
-              >
-                Rak‘ats
-              </Text>
-
-              <Text
-                className="text-xs mt-1"
-                style={{ color: theme.textMuted }}
-              >
-                {remainingRakats} {t.mySalats.pendingRakatsLabel}
-              </Text>
-            </View>
-          </View>
-
-          {/* Barra de Progreso Segmentada (por número de salats completados) */}
-          <View className="flex-row gap-1.5 h-3 mt-2">
-            {[1, 2, 3, 4, 5].map((_, index) => {
-              const isFilled = index < donePrayersCount;
-              return (
-                <View
-                  key={index}
-                  className="flex-1 rounded-full"
-                  style={{
-                    backgroundColor: isFilled
-                      ? theme.primary
-                      : theme.border,
-                    opacity: isFilled ? 1 : 0.3,
-                  }}
-                />
-              );
-            })}
-          </View>
-        </View>
-
-        {/* LISTA DE REZOS DE HOY EN UNA SOLA CARD */}
-        <View style={cardStyle} className="p-5 mb-8">
-          <View className="flex-row items-center justify-between mb-4">
-            <Text
-              className="font-bold"
-              style={{ fontSize: FontSizes.lg, color: theme.text }}
-            >
-              {t.mySalats.todayPrayers}
-            </Text>
-            <Text
-              style={{
-                fontSize: FontSizes.xs,
-                color: theme.textMuted,
-              }}
-            >
-              {donePrayersCount} / {PRAYER_ORDER.length}
-            </Text>
-          </View>
-
+      {/* HERO CARD: RESUMEN DE HOY */}
+      <Card className="mb-6">
+        <View className="flex-row justify-between items-start mb-4">
           <View>
-            {PRAYER_ORDER.map((name, index) => {
-              const done = todayStatus[name];
-              const rakats = RAKATS[name];
-              const label = t.prayers[name];
+            <ThemedText variant="small" className="font-semibold uppercase opacity-60">
+              {t.mySalats.todaySummary}
+            </ThemedText>
+            <ThemedText
+              className="font-black mt-1"
+              style={{ fontSize: 36, lineHeight: 40 }}
+            >
+              {completionPercentage}%
+            </ThemedText>
+            <ThemedText variant="small" color={theme.textMuted} className="mt-1">
+              {t.mySalats.todaySummaryHint}
+            </ThemedText>
+          </View>
 
-              return (
-                <View key={name}>
-                  <TouchableOpacity
-                    onPress={() => handleToggleTodayPrayer(name)}
-                    activeOpacity={0.7}
-                    className="flex-row items-center justify-between"
-                    style={{ paddingVertical: 8 }}
-                  >
-                    <View className="flex-row items-center">
-                      <View
-                        className="w-10 h-10 rounded-full items-center justify-center mr-3"
-                        style={{
-                          backgroundColor: done
-                            ? theme.primary
-                            : theme.background,
-                          borderWidth: done ? 0 : 1,
-                          borderColor: done
-                            ? theme.primary
-                            : theme.border,
-                        }}
-                      >
-                        <Ionicons
-                          name={
-                            done ? "checkmark" : "ellipse-outline"
-                          }
-                          size={20}
-                          color={done ? "#fff" : theme.textMuted}
-                        />
-                      </View>
+          <View className="items-end">
+            <View className="flex-row items-baseline">
+              <ThemedText
+                className="font-bold"
+                style={{ fontSize: 24, color: theme.primary }}
+              >
+                {doneRakats}
+              </ThemedText>
+              <ThemedText variant="small" className="font-medium ml-1" color={theme.textMuted}>
+                / {totalRakats}
+              </ThemedText>
+            </View>
+            <ThemedText variant="small" color={theme.textMuted}>
+              Rak‘ats
+            </ThemedText>
 
-                      <View>
-                        <Text
-                          className="font-bold capitalize"
-                          style={{
-                            fontSize: FontSizes.base,
-                            color: theme.text,
-                            opacity: done ? 0.5 : 1,
-                            textDecorationLine: done
-                              ? "line-through"
-                              : "none",
-                          }}
-                        >
-                          {label}
-                        </Text>
-                        <Text
-                          style={{
-                            fontSize: FontSizes.xs,
-                            color: theme.textMuted,
-                          }}
-                        >
-                          {rakats} rak‘ats
-                        </Text>
-                      </View>
+            <ThemedText variant="small" color={theme.textMuted} className="mt-1">
+              {remainingRakats} {t.mySalats.pendingRakatsLabel}
+            </ThemedText>
+          </View>
+        </View>
+
+        {/* Barra de Progreso Segmentada (por número de salats completados) */}
+        <View className="flex-row gap-1.5 h-3 mt-2">
+          {[1, 2, 3, 4, 5].map((_, index) => {
+            const isFilled = index < donePrayersCount;
+            return (
+              <View
+                key={index}
+                className="flex-1 rounded-full"
+                style={{
+                  backgroundColor: isFilled
+                    ? theme.primary
+                    : theme.border,
+                  opacity: isFilled ? 1 : 0.3,
+                }}
+              />
+            );
+          })}
+        </View>
+      </Card>
+
+      {/* LISTA DE REZOS DE HOY EN UNA SOLA CARD */}
+      <Card className="mb-8">
+        <View className="flex-row items-center justify-between mb-4">
+          <ThemedText variant="subtitle">
+            {t.mySalats.todayPrayers}
+          </ThemedText>
+          <ThemedText variant="small" color={theme.textMuted}>
+            {donePrayersCount} / {PRAYER_ORDER.length}
+          </ThemedText>
+        </View>
+
+        <View>
+          {PRAYER_ORDER.map((name, index) => {
+            const done = todayStatus[name];
+            const rakats = RAKATS[name];
+            const label = t.prayers[name];
+
+            return (
+              <View key={name}>
+                <TouchableOpacity
+                  onPress={() => handleToggleTodayPrayer(name)}
+                  activeOpacity={0.7}
+                  className="flex-row items-center justify-between"
+                  style={{ paddingVertical: 8 }}
+                >
+                  <View className="flex-row items-center">
+                    <View
+                      className="w-10 h-10 rounded-full items-center justify-center mr-3"
+                      style={{
+                        backgroundColor: done
+                          ? theme.primary
+                          : theme.background,
+                        borderWidth: done ? 0 : 1,
+                        borderColor: done
+                          ? theme.primary
+                          : theme.border,
+                      }}
+                    >
+                      <Ionicons
+                        name={
+                          done ? "checkmark" : "ellipse-outline"
+                        }
+                        size={20}
+                        color={done ? "#fff" : theme.textMuted}
+                      />
                     </View>
 
-                    {done && (
-                      <View
-                        className="px-3 py-1 rounded-full"
+                    <View>
+                      <ThemedText
+                        variant="default"
+                        className="font-bold capitalize"
                         style={{
-                          backgroundColor: theme.primary + "20",
+                          opacity: done ? 0.5 : 1,
+                          textDecorationLine: done
+                            ? "line-through"
+                            : "none",
                         }}
                       >
-                        <Text
-                          style={{
-                            fontSize: 10,
-                            fontWeight: "700",
-                            color: theme.primary,
-                          }}
-                        >
-                          {t.mySalats.statusDone.toUpperCase()}
-                        </Text>
-                      </View>
-                    )}
-                  </TouchableOpacity>
+                        {label}
+                      </ThemedText>
+                      <ThemedText variant="small" color={theme.textMuted}>
+                        {rakats} rak‘ats
+                      </ThemedText>
+                    </View>
+                  </View>
 
-                  {index < PRAYER_ORDER.length - 1 && (
+                  {done && (
                     <View
+                      className="px-3 py-1 rounded-full"
                       style={{
-                        height: 1,
-                        backgroundColor: theme.border,
-                        marginVertical: 6,
+                        backgroundColor: theme.primary + "20",
                       }}
-                    />
+                    >
+                      <ThemedText
+                        style={{
+                          fontSize: 10,
+                          fontWeight: "700",
+                          color: theme.primary,
+                        }}
+                      >
+                        {t.mySalats.statusDone.toUpperCase()}
+                      </ThemedText>
+                    </View>
                   )}
-                </View>
-              );
-            })}
-          </View>
-        </View>
+                </TouchableOpacity>
 
-        {/* GRÁFICO DE BARRAS SEMANAL (últimos 7 días) */}
-        <View style={cardStyle} className="p-5">
-          <View className="flex-row justify-between items-center mb-6">
-            <View>
-              <Text
-                className="font-bold text-base"
-                style={{ color: theme.text }}
-              >
-                {t.mySalats.historyTitle}
-              </Text>
-              <Text
-                className="text-xs opacity-60"
-                style={{ color: theme.textMuted }}
-              >
-                {t.mySalats.historySubtitle}
-              </Text>
-            </View>
-          </View>
-
-          <View className="flex-row justify-between items-end h-32">
-            {weeklyHistory.map((day) => {
-              const barHeightPct = Math.max(
-                day.progress * 100,
-                5
-              );
-
-              return (
-                <View
-                  key={day.key}
-                  className="items-center flex-1"
-                >
+                {index < PRAYER_ORDER.length - 1 && (
                   <View
-                    className="w-3 rounded-full relative overflow-hidden"
                     style={{
-                      height: `${barHeightPct}%`,
-                      backgroundColor: day.isToday
-                        ? theme.primary
-                        : day.progress > 0
-                        ? theme.primary
-                        : theme.border,
-                      opacity: day.isToday
-                        ? 1
-                        : day.progress > 0
-                        ? 0.4
-                        : 0.3,
+                      height: 1,
+                      backgroundColor: theme.border,
+                      marginVertical: 6,
                     }}
                   />
+                )}
+              </View>
+            );
+          })}
+        </View>
+      </Card>
 
-                  <Text
-                    className="mt-2 text-xs font-medium uppercase"
-                    style={{
-                      color: day.isToday
-                        ? theme.primary
-                        : theme.textMuted,
-                      fontWeight: day.isToday ? "bold" : "normal",
-                    }}
-                  >
-                    {day.dayLabel}
-                  </Text>
-                </View>
-              );
-            })}
+      {/* GRÁFICO DE BARRAS SEMANAL (últimos 7 días) */}
+      <Card>
+        <View className="flex-row justify-between items-center mb-6">
+          <View>
+            <ThemedText variant="default" className="font-bold">
+              {t.mySalats.historyTitle}
+            </ThemedText>
+            <ThemedText variant="small" color={theme.textMuted} className="opacity-60">
+              {t.mySalats.historySubtitle}
+            </ThemedText>
           </View>
         </View>
-      </ScrollView>
-    </SafeAreaView>
+
+        <View className="flex-row justify-between items-end h-32">
+          {weeklyHistory.map((day) => {
+            const barHeightPct = Math.max(
+              day.progress * 100,
+              5
+            );
+
+            return (
+              <View
+                key={day.key}
+                className="items-center flex-1"
+              >
+                <View
+                  className="w-3 rounded-full relative overflow-hidden"
+                  style={{
+                    height: `${barHeightPct}%`,
+                    backgroundColor: day.isToday
+                      ? theme.primary
+                      : day.progress > 0
+                      ? theme.primary
+                      : theme.border,
+                    opacity: day.isToday
+                      ? 1
+                      : day.progress > 0
+                      ? 0.4
+                      : 0.3,
+                  }}
+                />
+
+                <ThemedText
+                  variant="small"
+                  className="mt-2 font-medium uppercase"
+                  style={{
+                    color: day.isToday
+                      ? theme.primary
+                      : theme.textMuted,
+                    fontWeight: day.isToday ? "bold" : "normal",
+                    fontSize: 10
+                  }}
+                >
+                  {day.dayLabel}
+                </ThemedText>
+              </View>
+            );
+          })}
+        </View>
+      </Card>
+    </ScreenLayout>
   );
 }

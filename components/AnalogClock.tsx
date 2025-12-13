@@ -7,7 +7,6 @@ import {
   Easing,
   StyleSheet,
   View,
-  useColorScheme,
 } from "react-native";
 import Svg, {
   Circle,
@@ -21,9 +20,10 @@ import {
   ClockTheme,
   Colors,
   FontSizes,
-  PrayerStripeColors,
   type ColorSchemeName,
 } from "@/constants/theme";
+import { usePrayerTheme } from "@/contexts/prayer-theme-context";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import type {
   DayPrayers,
   PrayerName,
@@ -143,6 +143,9 @@ export function AnalogClock({ prayers }: AnalogClockProps) {
 
   const clockColors = ClockTheme[colorScheme];
   const textColor = Colors[colorScheme].text;
+  
+  // Usar colores dinámicos del contexto
+  const { colors: prayerColors } = usePrayerTheme();
 
   // Animación para sol y luna
   const sunAnim = useRef(new Animated.Value(0)).current;
@@ -220,7 +223,9 @@ export function AnalogClock({ prayers }: AnalogClockProps) {
   // 2) Franjas de cada rezo (anillo exterior ocupando el “bisel”)
   const prayerArcs = useMemo(() => {
     const arcs: React.ReactNode[] = [];
-    const palette = PrayerStripeColors[colorScheme];
+    
+    // Usamos los colores del contexto en lugar de la constante estática
+    const palette = prayerColors;
 
     const sequence = PRAYER_KEYS;
     for (let i = 0; i < sequence.length; i++) {
@@ -234,7 +239,8 @@ export function AnalogClock({ prayers }: AnalogClockProps) {
 
       const startDeg = prayerTimeToDegrees24(current);
       const endDeg = prayerTimeToDegrees24(next);
-      const color = palette[currentName];
+      // Aquí usamos palette dinámico
+      const color = palette[currentName as keyof typeof palette];
 
       const d = createRingArcPath(
         startDeg,
@@ -247,7 +253,7 @@ export function AnalogClock({ prayers }: AnalogClockProps) {
     }
 
     return arcs;
-  }, [prayers, colorScheme]);
+  }, [prayers, prayerColors]); // Dependencia clave: prayerColors
 
   // 3) Números 00–23
   const hourNumbers = useMemo(() => {

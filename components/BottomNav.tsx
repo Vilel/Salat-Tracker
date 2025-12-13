@@ -1,24 +1,22 @@
-// components/BottomNav.tsx
-
 import { Ionicons } from "@expo/vector-icons";
 import { Link, usePathname } from "expo-router";
 import React from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import {
   Colors,
-  FontSizes,
   type ColorSchemeName,
 } from "@/constants/theme";
 import { useLanguage } from "@/contexts/language-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { ThemedText } from "./ui/ThemedText";
 
-type NavKey = "home" | "salats" | "qada";
+type NavKey = "home" | "salats" | "qada" | "settings";
 
 type NavItem = {
   key: NavKey;
-  href: "/" | "/salats" | "/qada";
+  href: "/" | "/salats" | "/qada" | "/settings";
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
 };
@@ -52,6 +50,12 @@ export function BottomNav() {
       href: "/qada",
       icon: "time-outline",
       label: t.navigation.qada,
+    },
+    {
+      key: "settings",
+      href: "/settings",
+      icon: "settings-outline",
+      label: t.settings?.title ?? "Settings",
     },
   ];
 
@@ -92,16 +96,17 @@ export function BottomNav() {
                   size={20}
                   color={iconColor}
                 />
-                <Text
+                <ThemedText
+                  variant="small"
                   style={{
                     marginTop: 2,
-                    fontSize: FontSizes.xs,
                     fontWeight: isActive ? "700" : "500",
                     color: textColor,
+                    fontSize: 10
                   }}
                 >
                   {item.label}
-                </Text>
+                </ThemedText>
               </Pressable>
             </Link>
           );

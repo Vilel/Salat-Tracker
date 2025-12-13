@@ -1,15 +1,9 @@
-// app/index.tsx
-
 import * as Location from "expo-location";
 import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  ScrollView,
-  Text,
-  TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AnalogClock } from "@/components/AnalogClock";
 import { LanguageSelector } from "@/components/LanguageSelector";
@@ -19,9 +13,11 @@ import {
 } from "@/components/LocationSelector";
 import { NextPrayerDisplay } from "@/components/NextPrayerDisplay";
 import { PrayerTimeline } from "@/components/PrayerTimeline";
+import { Button } from "@/components/ui/Button";
+import { ScreenLayout } from "@/components/ui/ScreenLayout";
+import { ThemedText } from "@/components/ui/ThemedText";
 import {
   Colors,
-  FontSizes,
   type ColorSchemeName,
 } from "@/constants/theme";
 import { useLanguage } from "@/contexts/language-context";
@@ -149,60 +145,48 @@ export default function HomeScreen() {
     handleLocationModeChange(locationMode);
   };
 
-  const backgroundStyle = { backgroundColor: theme.background };
-
   // --- estados de carga / error ---
 
   if (loadingState === "loading") {
     return (
-      <SafeAreaView
-        className="flex-1"
-        style={backgroundStyle}
-      >
+      <ScreenLayout scrollable={false}>
         <View className="flex-1 items-center justify-center px-8">
           <ActivityIndicator size="large" color={theme.primary} />
-          <Text
+          <ThemedText
+            variant="subtitle"
             className="mt-4 text-center"
-            style={{ fontSize: FontSizes.lg, color: theme.textMuted }}
+            color={theme.textMuted}
+            style={{ fontSize: 18 }}
           >
             {t.loading}
-          </Text>
+          </ThemedText>
         </View>
-      </SafeAreaView>
+      </ScreenLayout>
     );
   }
 
   if (loadingState === "error") {
     return (
-      <SafeAreaView
-        className="flex-1"
-        style={backgroundStyle}
-      >
+      <ScreenLayout scrollable={false}>
         <View className="flex-1 items-center justify-center px-8">
-          <Text style={{ fontSize: 56, marginBottom: 12 }}>⚠️</Text>
-          <Text
-            className="text-center mb-4"
-            style={{ fontSize: FontSizes.lg, color: theme.text }}
+          <ThemedText style={{ fontSize: 56, marginBottom: 12 }}>⚠️</ThemedText>
+          <ThemedText
+            variant="subtitle"
+            className="text-center mb-6"
+            color={theme.text}
           >
             {errorMessage}
-          </Text>
-          <TouchableOpacity
+          </ThemedText>
+          
+          <Button 
+            label={t.retry}
             onPress={handleRetry}
-            className="flex-row items-center rounded-2xl px-6 py-3"
-            style={{ backgroundColor: theme.primary }}
-          >
-            <Text
-              style={{
-                fontSize: FontSizes.base,
-                fontWeight: "600",
-                color: "#ffffff",
-              }}
-            >
-              {t.retry}
-            </Text>
-          </TouchableOpacity>
+            variant="primary"
+            size="lg"
+            style={{ minWidth: 160 }}
+          />
         </View>
-      </SafeAreaView>
+      </ScreenLayout>
     );
   }
 
@@ -213,47 +197,34 @@ export default function HomeScreen() {
   // --- render normal ---
 
   return (
-    <SafeAreaView
-      className="flex-1"
-      style={backgroundStyle}
-    >
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ flexGrow: 1 }}
-        showsVerticalScrollIndicator={false}
-      >
-        <View className="flex-1 px-4 py-4">
-          {/* Esta columna ocupa todo el alto y reparte el espacio
-              de forma uniforme entre los 4 bloques */}
-          <View className="flex-1 justify-between">
-            {/* Header: selector de ubicación + selector de idioma */}
-            <View className="flex-row items-center justify-between gap-2">
-              <LocationSelector
-                mode={locationMode}
-                city={location?.city}
-                country={location?.country}
-                onChangeMode={setLocationMode}
-              />
-              <LanguageSelector />
-            </View>
-
-            {/* Próximo rezo */}
-            <NextPrayerDisplay prayer={nextPrayer} />
-
-            {/* Reloj analógico */}
-            <AnalogClock
-              prayers={prayers}
-              nextPrayer={nextPrayer.name}
-            />
-
-            {/* Timeline */}
-            <PrayerTimeline
-              prayers={prayers}
-              nextPrayer={nextPrayer.name}
-            />
-          </View>
+    <ScreenLayout>
+      <View className="flex-1 gap-6 pb-6">
+        {/* Header: selector de ubicación + selector de idioma */}
+        <View className="flex-row items-center justify-between gap-2">
+          <LocationSelector
+            mode={locationMode}
+            city={location?.city}
+            country={location?.country}
+            onChangeMode={setLocationMode}
+          />
+          <LanguageSelector />
         </View>
-      </ScrollView>
-    </SafeAreaView>
+
+        {/* Próximo rezo */}
+        <NextPrayerDisplay prayer={nextPrayer} />
+
+        {/* Reloj analógico */}
+        <AnalogClock
+          prayers={prayers}
+          nextPrayer={nextPrayer.name}
+        />
+
+        {/* Timeline */}
+        <PrayerTimeline
+          prayers={prayers}
+          nextPrayer={nextPrayer.name}
+        />
+      </View>
+    </ScreenLayout>
   );
 }

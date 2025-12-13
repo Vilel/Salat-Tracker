@@ -1,20 +1,20 @@
-// components/PrayerTimeline.tsx
-
 import React, { useEffect, useState } from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
 import {
   Colors,
-  PrayerStripeColors,
   type ColorSchemeName,
 } from "@/constants/theme";
 import { useLanguage } from "@/contexts/language-context";
+import { usePrayerTheme } from "@/contexts/prayer-theme-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import {
   formatTime,
   type DayPrayers,
   type PrayerName,
 } from "@/lib/prayer-times";
+import { Card } from "./ui/Card";
+import { ThemedText } from "./ui/ThemedText";
 
 interface PrayerTimelineProps {
   prayers: DayPrayers;
@@ -42,7 +42,9 @@ export function PrayerTimeline({ prayers, nextPrayer }: PrayerTimelineProps) {
   const colorScheme: ColorSchemeName =
     rawScheme === "dark" ? "dark" : "light";
   const theme = Colors[colorScheme];
-  const stripeColors = PrayerStripeColors[colorScheme];
+  
+  // Colores dinámicos
+  const { colors: prayerColors } = usePrayerTheme();
 
   // Actualizar reloj cada segundo
   useEffect(() => {
@@ -108,11 +110,12 @@ export function PrayerTimeline({ prayers, nextPrayer }: PrayerTimelineProps) {
 
   return (
     <View className="w-full">
-      <View
-        className="rounded-3xl px-4 py-4 shadow-sm border"
+      <Card
+        variant="outlined"
+        className="rounded-3xl px-4 py-4"
         style={{
-          backgroundColor: theme.card,
-          borderColor: theme.border,
+           backgroundColor: theme.card, // Card already handles this but redundant is fine or removing it
+           borderColor: theme.border,
         }}
       >
         <View className="relative">
@@ -151,7 +154,7 @@ export function PrayerTimeline({ prayers, nextPrayer }: PrayerTimelineProps) {
               const isNext = prayerName === nextPrayer;
 
               const dotColor =
-                stripeColors[prayerName] || theme.primary;
+                prayerColors[prayerName] || theme.primary;
 
               return (
                 <View
@@ -185,7 +188,8 @@ export function PrayerTimeline({ prayers, nextPrayer }: PrayerTimelineProps) {
                   {/* Etiquetas */}
                   <View className="items-center gap-[1px]">
                     {/* Nombre del rezo (abreviado) */}
-                    <Text
+                    <ThemedText
+                      variant="small"
                       className="uppercase text-center"
                       numberOfLines={1}
                       style={{
@@ -196,10 +200,11 @@ export function PrayerTimeline({ prayers, nextPrayer }: PrayerTimelineProps) {
                       }}
                     >
                       {t.prayers[prayerName]}
-                    </Text>
+                    </ThemedText>
 
                     {/* Hora */}
-                    <Text
+                    <ThemedText
+                      variant="small"
                       className="text-center"
                       numberOfLines={1}
                       style={{
@@ -212,14 +217,14 @@ export function PrayerTimeline({ prayers, nextPrayer }: PrayerTimelineProps) {
                         prayerData.hour,
                         prayerData.minute
                       )}
-                    </Text>
+                    </ThemedText>
                   </View>
                 </View>
               );
             })}
           </View>
         </View>
-      </View>
+      </Card>
     </View>
   );
 }

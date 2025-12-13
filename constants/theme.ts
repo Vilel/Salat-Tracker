@@ -1,31 +1,65 @@
-// constants/theme.ts
 import { Platform } from "react-native";
 
-const primaryLight = "#166534"; // verde profundo (accesible)
-const primaryDark = "#4ade80";  // verde suave para dark
-const bgLight = "#f9fafb";      // gris muy claro
-const bgDark = "#020617";       // casi negro
+// Paleta inspirada en "Modern Islamic Minimalist"
+const palette = {
+  emerald: {
+    50: "#ecfdf5",
+    100: "#d1fae5",
+    200: "#a7f3d0",
+    400: "#34d399",
+    500: "#10b981",
+    600: "#059669", // Primary Light
+    800: "#065f46", // Primary Dark
+    900: "#064e3b",
+  },
+  gold: {
+    500: "#eab308", // Secondary / Accent
+    600: "#ca8a04",
+  },
+  sand: {
+    50: "#fdf8f6", // Background Light Alt
+    100: "#f5e6e0",
+  },
+  midnight: {
+    800: "#1e293b",
+    900: "#0f172a", // Background Dark
+    950: "#020617",
+  },
+  slate: {
+    50: "#f8fafc", // Background Light
+    100: "#f1f5f9",
+    200: "#e2e8f0", // Border Light
+    500: "#64748b", // Text Muted
+    700: "#334155",
+    800: "#1e293b", // Border Dark
+    900: "#0f172a", // Text Dark
+  },
+};
 
 export const Colors = {
   light: {
-    text: "#111827",          // slate-900
-    textMuted: "#6b7280",     // slate-500
-    background: bgLight,
+    text: palette.midnight[900],
+    textMuted: palette.slate[500],
+    background: palette.slate[50], // Un blanco roto muy sutil
     card: "#ffffff",
-    border: "#e5e7eb",
-    primary: primaryLight,
-    primarySoft: "#bbf7d0",   // verde muy suave para chips
-    accent: "#f97316",        // naranja para acentos
+    border: palette.slate[200],
+    primary: palette.emerald[600],
+    primarySoft: palette.emerald[100],
+    accent: palette.gold[600],
+    success: palette.emerald[500],
+    error: "#ef4444",
   },
   dark: {
-    text: "#e5e7eb",
-    textMuted: "#9ca3af",
-    background: bgDark,
-    card: "#020617",
-    border: "#1f2937",
-    primary: primaryDark,
-    primarySoft: "#052e16",
-    accent: "#fb923c",
+    text: palette.slate[100],
+    textMuted: palette.slate[500],
+    background: palette.midnight[950],
+    card: palette.midnight[900],
+    border: palette.slate[800],
+    primary: palette.emerald[500], // Un poco más brillante para dark mode
+    primarySoft: palette.emerald[900],
+    accent: palette.gold[500],
+    success: palette.emerald[400],
+    error: "#f87171",
   },
 } as const;
 
@@ -90,30 +124,31 @@ export const ClockTheme: Record<
   }
 > = {
   light: {
-    bezel: "#000000",
+    bezel: palette.midnight[900],
     faceBg: "#ffffff",
-    nightOverlay: "rgba(15, 23, 42, 0.55)", // capa oscura noche
-    hourHand: Colors.light.text,
-    minuteHand: Colors.light.text,
-    center: Colors.light.text,
-    sun: "#facc15",  // amarillo cálido
-    moon: "#0f172a", // azul noche
-    shadow: "#000000",
+    nightOverlay: "rgba(15, 23, 42, 0.6)", 
+    hourHand: palette.midnight[900],
+    minuteHand: palette.midnight[900],
+    center: palette.emerald[600],
+    sun: palette.gold[500],
+    moon: palette.midnight[800],
+    shadow: palette.midnight[900],
   },
   dark: {
     bezel: "#ffffff",
-    faceBg: Colors.dark.card,
-    nightOverlay: "rgba(15, 23, 42, 0.75)",
-    hourHand: Colors.dark.text,
-    minuteHand: Colors.dark.text,
-    center: Colors.dark.text,
-    sun: "#fbbf24",
-    moon: "#0f172a",
+    faceBg: palette.midnight[900],
+    nightOverlay: "rgba(15, 23, 42, 0.8)",
+    hourHand: palette.slate[100],
+    minuteHand: palette.slate[100],
+    center: palette.emerald[500],
+    sun: palette.gold[500],
+    moon: palette.emerald[200], // Luna sutil verdosa
     shadow: "#000000",
   },
 };
 
 // Colores de franjas para cada rezo (reutilizables en otros componentes)
+// DEPRECATED: Use PrayerThemeContext instead for dynamic colors
 export const PrayerStripeColors: Record<
   ColorSchemeName,
   Record<"fajr" | "dhuhr" | "asr" | "maghrib" | "isha", string>

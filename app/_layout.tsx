@@ -9,6 +9,7 @@ import "../globals.css";
 
 import { BottomNav } from "@/components/BottomNav";
 import { LanguageProvider } from "@/contexts/language-context";
+import { PrayerThemeProvider } from "@/contexts/prayer-theme-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 
 export default function RootLayout() {
@@ -16,19 +17,21 @@ export default function RootLayout() {
 
   return (
     <LanguageProvider>
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <View style={{ flex: 1 }}>
-          <Stack screenOptions={{ headerShown: false }}>
-            {/* index.tsx será la pantalla principal automáticamente */}
-            {/* app/locations.tsx se registra como /locations */}
-          </Stack>
+      <PrayerThemeProvider colorScheme={colorScheme}>
+        <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+          <View style={{ flex: 1 }}>
+            <Stack screenOptions={{ headerShown: false }}>
+              {/* index.tsx será la pantalla principal automáticamente */}
+              {/* app/locations.tsx se registra como /locations */}
+            </Stack>
 
-          {/* Barra de navegación inferior compartida */}
-          <BottomNav />
+            {/* Barra de navegación inferior compartida */}
+            <BottomNav />
 
-          <StatusBar style="auto" />
-        </View>
-      </ThemeProvider>
+            <StatusBar style="auto" />
+          </View>
+        </ThemeProvider>
+      </PrayerThemeProvider>
     </LanguageProvider>
   );
 }

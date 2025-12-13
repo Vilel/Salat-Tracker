@@ -50,7 +50,7 @@ export function ScreenLayout({
           {children}
         </ScrollView>
       ) : (
-        <View style={[{ flex: 1 }, paddingStyle]}>{children}</View>
+        <View style={[{ flex: 1 }, paddingStyle, contentContainerStyle]}>{children}</View>
       )}
     </SafeAreaView>
   );

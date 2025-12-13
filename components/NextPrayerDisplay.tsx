@@ -1,12 +1,9 @@
-// components/NextPrayerDisplay.tsx
-
 import {
   Colors,
-  FontSizes,
-  PrayerStripeColors,
-  type ColorSchemeName,
+  type ColorSchemeName
 } from "@/constants/theme";
 import { useLanguage } from "@/contexts/language-context";
+import { usePrayerTheme } from "@/contexts/prayer-theme-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import {
   formatTime,
@@ -14,9 +11,11 @@ import {
   type PrayerName,
   type PrayerTime,
 } from "@/lib/prayer-times";
-import { Ionicons } from "@expo/vector-icons"; // Asegúrate de tener esto o usa tu librería de iconos preferida
+import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useMemo, useState } from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
+import { Card } from "./ui/Card";
+import { ThemedText } from "./ui/ThemedText";
 
 interface NextPrayerDisplayProps {
   prayer: PrayerTime;
@@ -31,11 +30,13 @@ export function NextPrayerDisplay({ prayer }: NextPrayerDisplayProps) {
   const rawScheme = useColorScheme();
   const colorScheme: ColorSchemeName = rawScheme === "dark" ? "dark" : "light";
   const theme = Colors[colorScheme];
-  const stripeColors = PrayerStripeColors[colorScheme];
+  
+  // Usar colores dinámicos en lugar de estáticos
+  const { colors: prayerColors } = usePrayerTheme();
 
   const accentColor = useMemo(
-    () => stripeColors[prayer.name as PrayerName] ?? theme.primary,
-    [stripeColors, prayer.name, theme.primary]
+    () => prayerColors[prayer.name as PrayerName] ?? theme.primary,
+    [prayerColors, prayer.name, theme.primary]
   );
 
   useEffect(() => {
@@ -53,60 +54,62 @@ export function NextPrayerDisplay({ prayer }: NextPrayerDisplayProps) {
 
   return (
     <View className="w-full">
-      <View
-        className="w-full rounded-[32px] overflow-hidden relative"
+      <Card
+        variant="elevated"
         style={{
-          backgroundColor: theme.card,
-          // Sombra suave y moderna
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 10 },
-          shadowOpacity: 0.1,
-          shadowRadius: 20,
-          elevation: 5,
+          borderRadius: 32,
+          padding: 0,
+          overflow: "hidden",
           borderWidth: 1,
-          borderColor: rawScheme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'
+          borderColor: rawScheme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' // Sutil borde
         }}
       >
-
         {/* --- SECCIÓN SUPERIOR: INFO DEL REZO --- */}
         <View className="flex-row justify-between items-center px-6 pt-6 pb-4">
           <View>
             <View className="flex-row items-center mb-1">
-              <Text
-                className="uppercase font-bold tracking-widest opacity-60 mr-2"
-                style={{
-                  fontSize: 10,
-                  color: theme.text,
-                }}
+              <ThemedText
+                variant="small"
+                className="uppercase tracking-widest opacity-70 mr-2"
+                style={{ fontSize: 10, fontWeight: "600" }}
               >
                 {t.nextPrayer}
-              </Text>
+              </ThemedText>
               {/* Icono pequeño indicativo */}
               <Ionicons name="time-outline" size={12} color={theme.textMuted} />
             </View>
 
-            <Text
-              className="font-extrabold capitalize"
+            <ThemedText
+              variant="title"
+              className="capitalize"
               style={{
-                fontSize: 32,
-                color: theme.text,
-                lineHeight: 38,
+                fontSize: 36, // Más grande para mejor jerarquía
+                lineHeight: 42,
+                fontWeight: "800",
+                letterSpacing: -0.5,
               }}
             >
               {t.prayers[prayer.name]}
-            </Text>
+            </ThemedText>
             
-            <View className="flex-row items-center mt-1">
-              <Ionicons name="location-sharp" size={14} color={accentColor} style={{ marginRight: 4 }} />
-              <Text
-                className="font-medium"
-                style={{
-                  fontSize: FontSizes.base,
-                  color: theme.textMuted,
+            <View className="flex-row items-center mt-2">
+              <View 
+                style={{ 
+                  backgroundColor: accentColor + '20', 
+                  padding: 4, 
+                  borderRadius: 8, 
+                  marginRight: 8 
                 }}
               >
+                <Ionicons name="location-sharp" size={14} color={accentColor} />
+              </View>
+              <ThemedText
+                variant="default"
+                color={theme.textMuted}
+                style={{ fontWeight: "600", fontSize: 18 }}
+              >
                 {formattedTime}
-              </Text>
+              </ThemedText>
             </View>
           </View>
 
@@ -114,54 +117,52 @@ export function NextPrayerDisplay({ prayer }: NextPrayerDisplayProps) {
           <View 
             className="rounded-full items-center justify-center"
             style={{
-              width: 56,
-              height: 56,
-              backgroundColor: accentColor + '15', // 15 = muy transparente
+              width: 64,
+              height: 64,
+              backgroundColor: accentColor + '10', // Muy sutil
             }}
           >
-             {/* Puedes cambiar el icono dinámicamente según el rezo si quieres */}
-            <Ionicons name="moon" size={28} color={accentColor} />
+             {/* Icono de luna/sol según el rezo podría ser una mejora futura */}
+            <Ionicons name="moon" size={32} color={accentColor} />
           </View>
         </View>
 
         {/* Separador Sutil */}
-        <View className="mx-6 h-[1px] opacity-10" style={{ backgroundColor: theme.text }} />
+        <View className="mx-6 h-[1px] opacity-5" style={{ backgroundColor: theme.text }} />
 
         {/* --- SECCIÓN INFERIOR: CONTADOR --- */}
         <View 
           className="px-6 py-5 flex-row items-center justify-between"
-          style={{ backgroundColor: rawScheme === 'dark' ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.02)' }}
+          style={{ backgroundColor: rawScheme === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}
         >
-          <Text 
-            className="font-medium text-xs opacity-60"
-            style={{ color: theme.text }}
+          <ThemedText 
+            variant="small"
+            className="font-medium opacity-60"
           >
             {t.timeRemaining}
-          </Text>
+          </ThemedText>
 
           <View className="flex-row items-baseline gap-1">
             {/* Horas */}
-            <Text 
-              className="font-bold tabular-nums" // tabular-nums evita que el texto salte cuando cambian los números
-              style={{ fontSize: 24, color: theme.text }}
+            <ThemedText 
+              style={{ fontSize: 28, fontWeight: "800", fontVariant: ["tabular-nums"], color: theme.text }}
             >
               {formatDigit(timeLeft.hours)}
-              <Text style={{ fontSize: 14, fontWeight: '400', color: theme.textMuted }}>h</Text>
-            </Text>
+              <ThemedText style={{ fontSize: 14, fontWeight: '500', color: theme.textMuted }}>h</ThemedText>
+            </ThemedText>
 
-            <Text className="text-lg opacity-30 mx-1" style={{ color: theme.text }}>:</Text>
+            <ThemedText className="text-xl opacity-30 mx-1 mb-1">:</ThemedText>
 
             {/* Minutos */}
-            <Text 
-              className="font-bold tabular-nums"
-              style={{ fontSize: 24, color: theme.text }}
+            <ThemedText 
+              style={{ fontSize: 28, fontWeight: "800", fontVariant: ["tabular-nums"], color: theme.text }}
             >
               {formatDigit(timeLeft.minutes)}
-              <Text style={{ fontSize: 14, fontWeight: '400', color: theme.textMuted }}>m</Text>
-            </Text>
+              <ThemedText style={{ fontSize: 14, fontWeight: '500', color: theme.textMuted }}>m</ThemedText>
+            </ThemedText>
           </View>
         </View>
-      </View>
+      </Card>
     </View>
   );
 }
