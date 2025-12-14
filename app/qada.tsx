@@ -1,14 +1,14 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Modal,
+  Pressable,
   TextInput,
   View,
 } from "react-native";
 
-import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
-import { ScreenLayout } from "@/components/ui/ScreenLayout";
-import { ThemedText } from "@/components/ui/ThemedText";
+import { Button, Card, ScreenLayout, ThemedText } from "@/components/ui";
 import {
   Colors,
   FontSizes,
@@ -16,6 +16,7 @@ import {
 } from "@/constants/theme";
 import { useLanguage } from "@/contexts/language-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import type { PrayerName } from "@/lib/prayer-times";
 
 import {
   computeDayStats,
@@ -25,9 +26,12 @@ import {
   getSortedDateKeys,
   loadQadaCleared,
   loadTracker,
+  PRAYER_ORDER,
   saveQadaCleared,
+  saveTracker,
+  togglePrayerForDate,
   type DayStatus,
-  type TrackerStore,
+  type TrackerStore
 } from "@/lib/salat-tracker";
 
 /**
@@ -39,6 +43,7 @@ function formatDateLabel(dateKey: string, locale: string = "en-US") {
     weekday: "short",
     day: "2-digit",
     month: "short",
+    year: "numeric",
   });
 }
 
@@ -53,6 +58,9 @@ export default function QadaScreen() {
   const [qadaCleared, setQadaCleared] = useState<number>(0);
   const [inputValue, setInputValue] = useState<string>("");
   const [loading, setLoading] = useState(true);
+  
+  // Estado para el modal de edición de día pasado
+  const [editingDateKey, setEditingDateKey] = useState<string | null>(null);
 
   const todayKey = getDateKey(new Date());
 
@@ -84,13 +92,9 @@ export default function QadaScreen() {
   );
 
   // Balance global:
-  // balance = qadaCleared - totalMissed
-  // < 0 → deuda (pendientes) → número NEGATIVO en rojo
-  // > 0 → más hechos que pendientes → número POSITIVO en verde
   const balance = qadaCleared - totalMissed;
   const absBalance = Math.abs(balance);
 
-  // 👇 aquí ensanchamos el tipo a string para evitar el error de literales
   let balanceColor: string = theme.text;
   let balanceText = "0";
   let balanceLabel = t.qada.netZeroLabel;
@@ -100,7 +104,7 @@ export default function QadaScreen() {
     balanceText = `-${absBalance}`;
     balanceLabel = t.qada.netNegativeLabel;
   } else if (balance > 0) {
-    balanceColor = theme.primary; // verde (primary ya es verde)
+    balanceColor = theme.primary; // verde
     balanceText = String(absBalance);
     balanceLabel = t.qada.netPositiveLabel;
   }
@@ -124,33 +128,148 @@ export default function QadaScreen() {
     await saveQadaCleared(newCleared);
   };
 
+  const handleToggleHistoryPrayer = (dateKey: string, prayer: PrayerName) => {
+    setTracker((prev) => {
+      const updated = togglePrayerForDate(prev, dateKey, prayer);
+      saveTracker(updated);
+      return updated;
+    });
+  };
+
   if (loading) {
     return (
       <ScreenLayout scrollable={false}>
-        <View className="flex-1 items-center justify-center">
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <ActivityIndicator size="large" color={theme.primary} />
         </View>
       </ScreenLayout>
     );
   }
 
+  // Render del contenido del modal
+  const renderEditModal = () => {
+    if (!editingDateKey) return null;
+
+    const dayStatus = tracker[editingDateKey] ?? createEmptyDayStatus();
+    const dateLabel = formatDateLabel(editingDateKey, "en-US"); // TODO: usar locale real
+
+    return (
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={!!editingDateKey}
+        onRequestClose={() => setEditingDateKey(null)}
+      >
+        <Pressable
+          style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 16, backgroundColor: "rgba(0,0,0,0.5)" }}
+          onPress={() => setEditingDateKey(null)}
+        >
+          <Pressable
+            style={{ width: "100%", maxWidth: 340 }}
+            onPress={(e) => e.stopPropagation()}
+          >
+            <Card variant="elevated" style={{ padding: 0, overflow: 'hidden', borderRadius: 24 }}>
+              <View style={{ padding: 20, borderBottomWidth: 1, borderColor: theme.border }}>
+                <ThemedText variant="subtitle" style={{ textAlign: 'center' }}>
+                  {dateLabel}
+                </ThemedText>
+                <ThemedText
+                  variant="small"
+                  style={{ textAlign: 'center', marginTop: 4 }}
+                  color={theme.textMuted}
+                >
+                  {t.mySalats.historyTitle}
+                </ThemedText>
+              </View>
+
+              <View style={{ padding: 8 }}>
+                {PRAYER_ORDER.map((name) => {
+                  const done = dayStatus[name];
+                  const label = t.prayers[name];
+                  
+                  return (
+                    <Pressable
+                      key={name}
+                      onPress={() => handleToggleHistoryPrayer(editingDateKey, name)}
+                      style={({ pressed }) => ({
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: 12,
+                        borderRadius: 12,
+                        marginBottom: 4,
+                        backgroundColor: done ? theme.primary + "15" : "transparent",
+                        opacity: pressed ? 0.7 : 1
+                      })}
+                    >
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                        <View
+                          style={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: 16,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backgroundColor: done ? theme.primary : theme.border,
+                          }}
+                        >
+                          <Ionicons
+                            name="checkmark"
+                            size={16}
+                            color={done ? "#fff" : theme.textMuted}
+                          />
+                        </View>
+                        <ThemedText style={{ textTransform: 'capitalize', fontWeight: '500' }}>
+                          {label}
+                        </ThemedText>
+                      </View>
+                      
+                      {done && (
+                        <ThemedText
+                          variant="small"
+                          style={{ color: theme.primary, fontWeight: "700" }}
+                        >
+                          {t.mySalats.statusDone}
+                        </ThemedText>
+                      )}
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              <View style={{ padding: 16, borderTopWidth: 1, borderColor: theme.border }}>
+                <Button
+                  label={t.common?.close ?? "Close"}
+                  onPress={() => setEditingDateKey(null)}
+                  variant="outline"
+                />
+              </View>
+            </Card>
+          </Pressable>
+        </Pressable>
+      </Modal>
+    );
+  };
+
   return (
     <ScreenLayout contentContainerStyle={{ paddingBottom: 40 }}>
-      {/* HEADER SIN ICONO A LA DERECHA */}
-      <View className="mb-6 mt-2">
+      {renderEditModal()}
+
+      {/* HEADER */}
+      <View style={{ marginBottom: 24, marginTop: 8 }}>
         <ThemedText variant="title" style={{ letterSpacing: -0.5 }}>
           {t.qada.title}
         </ThemedText>
-        <ThemedText variant="default" color={theme.textMuted} className="mt-1">
+        <ThemedText variant="default" color={theme.textMuted} style={{ marginTop: 4 }}>
           {t.qada.subtitle}
         </ThemedText>
       </View>
 
       {/* CARD RESUMEN QADÁ */}
-      <Card className="mb-6">
-        <View className="flex-row justify-between items-start mb-3">
+      <Card style={{ marginBottom: 24 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
           <View>
-            <ThemedText variant="small" className="font-semibold uppercase opacity-60">
+            <ThemedText variant="small" style={{ fontWeight: '700', textTransform: 'uppercase' }} color={theme.textMuted}>
               {t.qada.summaryTitle}
             </ThemedText>
             <ThemedText
@@ -163,33 +282,33 @@ export default function QadaScreen() {
             >
               {balanceText}
             </ThemedText>
-            <ThemedText variant="small" color={theme.textMuted}>
+            <ThemedText variant="small" color={theme.textMuted} style={{ fontWeight: "500" }}>
               {balanceLabel}
             </ThemedText>
           </View>
 
-          <View className="items-end">
-            <ThemedText variant="small" className="uppercase font-semibold opacity-60" color={theme.textMuted}>
+          <View style={{ alignItems: 'flex-end' }}>
+            <ThemedText variant="small" style={{ textTransform: 'uppercase', fontWeight: '700' }} color={theme.textMuted}>
               {t.qada.summaryDetailsTitle}
             </ThemedText>
-            <ThemedText className="mt-1">
+            <ThemedText style={{ marginTop: 4, fontWeight: '500' }}>
               {totalMissed} {t.qada.missedLabel}
             </ThemedText>
-            <ThemedText>
+            <ThemedText style={{ fontWeight: '500' }}>
               {qadaCleared} {t.qada.clearedLabel}
             </ThemedText>
-            <ThemedText variant="small" color={theme.textMuted} className="mt-1">
+            <ThemedText variant="small" color={theme.textMuted} style={{ marginTop: 4, fontWeight: "500" }}>
               ({netPending} {t.qada.netNegativeLabel.toLowerCase()})
             </ThemedText>
           </View>
         </View>
 
         {/* INPUT PARA SUMAR QADÁ */}
-        <View className="mt-4">
-          <ThemedText variant="small" color={theme.textMuted} className="mb-2">
+        <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderColor: theme.border }}>
+          <ThemedText variant="small" color={theme.textMuted} style={{ marginBottom: 12 }}>
             {t.qada.inputLabel}
           </ThemedText>
-          <View className="flex-row items-center gap-2">
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
             <TextInput
               value={inputValue}
               onChangeText={setInputValue}
@@ -198,38 +317,46 @@ export default function QadaScreen() {
               placeholderTextColor={theme.textMuted}
               style={{
                 flex: 1,
+                height: 48,
                 borderWidth: 1,
                 borderColor: theme.border,
-                borderRadius: 999,
+                borderRadius: 12,
                 paddingHorizontal: 16,
-                paddingVertical: 10,
                 color: theme.text,
-                fontSize: FontSizes.sm,
+                fontSize: FontSizes.base,
                 backgroundColor: theme.background,
               }}
             />
-            <Button 
-              label={t.qada.registerButton}
-              onPress={handleRegisterQada}
-              size="sm"
-              variant="primary"
-              style={{ borderRadius: 999, paddingHorizontal: 20 }}
-            />
+            <View style={{ flexShrink: 0 }}>
+              <Button 
+                label={t.qada.registerButton}
+                onPress={handleRegisterQada}
+                size="md"
+                variant={(!inputValue || parseInt(inputValue) <= 0) ? "ghost" : "secondary"}
+                disabled={!inputValue || parseInt(inputValue) <= 0}
+                style={{ 
+                  height: 48, 
+                  paddingHorizontal: 24, 
+                  borderRadius: 12,
+                  opacity: (!inputValue || parseInt(inputValue) <= 0) ? 0.5 : 1
+                }}
+              />
+            </View>
           </View>
         </View>
       </Card>
 
       {/* HISTÓRICO COMPLETO */}
-      <ThemedText variant="subtitle" className="mb-3 ml-1">
+      <ThemedText variant="subtitle" style={{ marginBottom: 12, marginLeft: 4 }}>
         {t.qada.historyTitle}
       </ThemedText>
 
       {historyKeys.length === 0 ? (
-        <ThemedText variant="small" color={theme.textMuted} className="ml-1 mt-1">
+        <ThemedText variant="small" color={theme.textMuted} style={{ marginLeft: 4, marginTop: 4 }}>
           {t.qada.historyEmpty}
         </ThemedText>
       ) : (
-        <View className="gap-3">
+        <View style={{ gap: 12 }}>
           {historyKeys.map((dateKey) => {
             const dayStatus: DayStatus =
               tracker[dateKey] ?? createEmptyDayStatus();
@@ -241,31 +368,43 @@ export default function QadaScreen() {
             } = computeDayStats(dayStatus);
 
             return (
-              <Card
+              <Pressable
                 key={dateKey}
-                variant="flat"
-                className="flex-row items-center justify-between py-3 px-4"
-                style={{ backgroundColor: theme.card }} // Ensure card bg
+                onPress={() => setEditingDateKey(dateKey)}
               >
-                <View>
-                  <ThemedText variant="default" className="font-semibold">
-                    {formatDateLabel(dateKey, "en-US")}
-                  </ThemedText>
-                  <ThemedText variant="small" color={theme.textMuted} className="mt-1">
-                    {donePrayersCount} / 5 salats | {doneRakats} /{" "}
-                    {totalRakats} rak‘ats
-                  </ThemedText>
-                </View>
+                <Card
+                  variant="flat"
+                  style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 12, paddingHorizontal: 16, backgroundColor: theme.card }}
+                >
+                  <View className="flex-1 mr-4">
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                      <ThemedText 
+                        variant="default" 
+                        style={{ fontWeight: '600' }}
+                        numberOfLines={1}
+                        adjustsFontSizeToFit
+                        minimumFontScale={0.8}
+                      >
+                        {formatDateLabel(dateKey, "en-US")}
+                      </ThemedText>
+                      <Ionicons name="pencil" size={12} color={theme.textMuted} style={{ opacity: 0.5 }} />
+                    </View>
+                    <ThemedText variant="small" color={theme.textMuted} style={{ marginTop: 4 }}>
+                      {donePrayersCount} / 5 salats | {doneRakats} /{" "}
+                      {totalRakats} rak‘ats
+                    </ThemedText>
+                  </View>
 
-                <View className="items-end">
-                  <ThemedText variant="default" className="font-bold">
-                    {completionPercentage}%
-                  </ThemedText>
-                  <ThemedText variant="small" color={theme.textMuted}>
-                    Completado
-                  </ThemedText>
-                </View>
-              </Card>
+                  <View style={{ alignItems: 'flex-end' }}>
+                    <ThemedText variant="default" style={{ fontWeight: '700' }}>
+                      {completionPercentage}%
+                    </ThemedText>
+                    <ThemedText variant="small" color={theme.textMuted}>
+                      Completado
+                    </ThemedText>
+                  </View>
+                </Card>
+              </Pressable>
             );
           })}
         </View>

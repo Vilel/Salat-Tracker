@@ -1,20 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { View } from "react-native";
 
+import { Card, ThemedText } from "@/components/ui";
 import {
-  Colors,
-  type ColorSchemeName,
+    Colors,
+    type ColorSchemeName,
 } from "@/constants/theme";
 import { useLanguage } from "@/contexts/language-context";
 import { usePrayerTheme } from "@/contexts/prayer-theme-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import {
-  formatTime,
-  type DayPrayers,
-  type PrayerName,
+    formatTime,
+    type DayPrayers,
+    type PrayerName,
 } from "@/lib/prayer-times";
-import { Card } from "./ui/Card";
-import { ThemedText } from "./ui/ThemedText";
 
 interface PrayerTimelineProps {
   prayers: DayPrayers;
@@ -186,12 +185,14 @@ export function PrayerTimeline({ prayers, nextPrayer }: PrayerTimelineProps) {
                   </View>
 
                   {/* Etiquetas */}
-                  <View className="items-center gap-[1px]">
+                  <View className="items-center gap-[1px] w-12">
                     {/* Nombre del rezo (abreviado) */}
                     <ThemedText
                       variant="small"
-                      className="uppercase text-center"
+                      className="uppercase text-center w-full"
                       numberOfLines={1}
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.7}
                       style={{
                         fontSize: 10,
                         fontWeight: isNext ? "800" : "600",
@@ -205,8 +206,10 @@ export function PrayerTimeline({ prayers, nextPrayer }: PrayerTimelineProps) {
                     {/* Hora */}
                     <ThemedText
                       variant="small"
-                      className="text-center"
+                      className="text-center w-full"
                       numberOfLines={1}
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.8}
                       style={{
                         fontSize: 11,
                         fontWeight: isNext ? "700" : "400",

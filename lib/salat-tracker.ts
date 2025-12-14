@@ -21,15 +21,27 @@ export const PRAYER_ORDER: PrayerName[] = [
 ];
 
 /**
- * Número de rak‘ats que contamos para cada salat.
- * Nota: Isha se cuenta como 7 en total (4 + 2 + 1).
+ * Número de rak‘ats OBLIGATORIOS (Fard) que contamos para el progreso principal y Qada.
+ * Las Sunnah/Nafl/Witr se consideran extras y no suman al % obligatorio.
  */
 export const RAKATS: Record<PrayerName, number> = {
   fajr: 2,
   dhuhr: 4,
   asr: 4,
   maghrib: 3,
-  isha: 7,
+  isha: 4, // Solo los 4 Fard. (Antes 7 con witr/sunnah)
+};
+
+/**
+ * Detalle completo de la estructura de cada rezo para referencia visual.
+ * Fard es lo único que trackeamos en el progreso principal.
+ */
+export const PRAYER_STRUCTURE: Record<PrayerName, { fard: number; sunnahBefore?: number; sunnahAfter?: number; witr?: number; nafl?: number }> = {
+  fajr: { sunnahBefore: 2, fard: 2 },
+  dhuhr: { sunnahBefore: 4, fard: 4, sunnahAfter: 2, nafl: 2 },
+  asr: { sunnahBefore: 4, fard: 4 },
+  maghrib: { fard: 3, sunnahAfter: 2 },
+  isha: { sunnahBefore: 4, fard: 4, sunnahAfter: 2, witr: 3 },
 };
 
 /**

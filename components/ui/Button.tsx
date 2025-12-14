@@ -3,10 +3,9 @@ import {
     ActivityIndicator,
     Pressable,
     StyleSheet,
-    View,
     type PressableProps,
     type StyleProp,
-    type ViewStyle,
+    type ViewStyle
 } from 'react-native';
 
 import { Colors, FontSizes } from '@/constants/theme';
@@ -38,11 +37,11 @@ export function Button({
   const theme = Colors[colorScheme === 'dark' ? 'dark' : 'light'];
 
   const getBackgroundColor = (pressed: boolean) => {
-    if (disabled) return theme.border; // Disabled state color
+    if (disabled) return theme.border;
 
     switch (variant) {
       case 'primary':
-        return pressed ? theme.primary + 'CC' : theme.primary; // Add opacity on press
+        return pressed ? theme.primary + 'CC' : theme.primary;
       case 'secondary':
         return pressed ? theme.primarySoft + 'CC' : theme.primarySoft;
       case 'outline':
@@ -91,6 +90,7 @@ export function Button({
           paddingVertical,
           paddingHorizontal,
           opacity: disabled || loading ? 0.7 : 1,
+          gap: 8, // Modern Flexbox gap
         },
         style as ViewStyle,
       ]}
@@ -100,7 +100,7 @@ export function Button({
         <ActivityIndicator size="small" color={getTextColor()} />
       ) : (
         <>
-          {leftIcon && <View style={styles.iconLeft}>{leftIcon}</View>}
+          {leftIcon}
           <ThemedText
             style={{
               color: getTextColor(),
@@ -111,7 +111,7 @@ export function Button({
           >
             {label}
           </ThemedText>
-          {rightIcon && <View style={styles.iconRight}>{rightIcon}</View>}
+          {rightIcon}
         </>
       )}
     </Pressable>
@@ -125,11 +125,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 12,
   },
-  iconLeft: {
-    marginRight: 8,
-  },
-  iconRight: {
-    marginLeft: 8,
-  },
 });
-

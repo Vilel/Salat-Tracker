@@ -1,21 +1,20 @@
+import { Card, ThemedText } from "@/components/ui";
 import {
-  Colors,
-  type ColorSchemeName
+    Colors,
+    type ColorSchemeName
 } from "@/constants/theme";
 import { useLanguage } from "@/contexts/language-context";
 import { usePrayerTheme } from "@/contexts/prayer-theme-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import {
-  formatTime,
-  getTimeUntilPrayer,
-  type PrayerName,
-  type PrayerTime,
+    formatTime,
+    getTimeUntilPrayer,
+    type PrayerName,
+    type PrayerTime,
 } from "@/lib/prayer-times";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useMemo, useState } from "react";
 import { View } from "react-native";
-import { Card } from "./ui/Card";
-import { ThemedText } from "./ui/ThemedText";
 
 interface NextPrayerDisplayProps {
   prayer: PrayerTime;
@@ -66,7 +65,7 @@ export function NextPrayerDisplay({ prayer }: NextPrayerDisplayProps) {
       >
         {/* --- SECCIÓN SUPERIOR: INFO DEL REZO --- */}
         <View className="flex-row justify-between items-center px-6 pt-6 pb-4">
-          <View>
+          <View className="flex-1 mr-4">
             <View className="flex-row items-center mb-1">
               <ThemedText
                 variant="small"
@@ -82,6 +81,9 @@ export function NextPrayerDisplay({ prayer }: NextPrayerDisplayProps) {
             <ThemedText
               variant="title"
               className="capitalize"
+              adjustsFontSizeToFit
+              numberOfLines={1}
+              minimumFontScale={0.5}
               style={{
                 fontSize: 36, // Más grande para mejor jerarquía
                 lineHeight: 42,
@@ -145,6 +147,9 @@ export function NextPrayerDisplay({ prayer }: NextPrayerDisplayProps) {
           <View className="flex-row items-baseline gap-1">
             {/* Horas */}
             <ThemedText 
+              adjustsFontSizeToFit
+              numberOfLines={1}
+              minimumFontScale={0.5}
               style={{ fontSize: 28, fontWeight: "800", fontVariant: ["tabular-nums"], color: theme.text }}
             >
               {formatDigit(timeLeft.hours)}
@@ -155,6 +160,9 @@ export function NextPrayerDisplay({ prayer }: NextPrayerDisplayProps) {
 
             {/* Minutos */}
             <ThemedText 
+              adjustsFontSizeToFit
+              numberOfLines={1}
+              minimumFontScale={0.5}
               style={{ fontSize: 28, fontWeight: "800", fontVariant: ["tabular-nums"], color: theme.text }}
             >
               {formatDigit(timeLeft.minutes)}

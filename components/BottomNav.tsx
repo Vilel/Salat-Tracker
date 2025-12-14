@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Link, usePathname } from "expo-router";
+import { usePathname, useRouter } from "expo-router";
 import React from "react";
 import { Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -24,6 +24,7 @@ type NavItem = {
 export function BottomNav() {
   const insets = useSafeAreaInsets();
   const { t } = useLanguage();
+  const router = useRouter();
 
   const rawScheme = useColorScheme();
   const colorScheme: ColorSchemeName =
@@ -83,32 +84,35 @@ export function BottomNav() {
             : theme.textMuted;
 
           return (
-            <Link key={item.key} href={item.href} asChild>
-              <Pressable
-                className="flex-1 items-center justify-center"
-                style={({ pressed }) => ({
-                  opacity: pressed ? 0.7 : 1,
-                  paddingVertical: 8,
-                })}
+            <Pressable
+              key={item.key}
+              className="flex-1 items-center justify-center"
+              onPress={() => {
+                if (isActive) return;
+                router.replace(item.href);
+              }}
+              style={({ pressed }) => ({
+                opacity: pressed ? 0.7 : 1,
+                paddingVertical: 8,
+              })}
+            >
+              <Ionicons
+                name={item.icon}
+                size={20}
+                color={iconColor}
+              />
+              <ThemedText
+                variant="small"
+                style={{
+                  marginTop: 2,
+                  fontWeight: isActive ? "700" : "500",
+                  color: textColor,
+                  fontSize: 10,
+                }}
               >
-                <Ionicons
-                  name={item.icon}
-                  size={20}
-                  color={iconColor}
-                />
-                <ThemedText
-                  variant="small"
-                  style={{
-                    marginTop: 2,
-                    fontWeight: isActive ? "700" : "500",
-                    color: textColor,
-                    fontSize: 10
-                  }}
-                >
-                  {item.label}
-                </ThemedText>
-              </Pressable>
-            </Link>
+                {item.label}
+              </ThemedText>
+            </Pressable>
           );
         })}
       </View>

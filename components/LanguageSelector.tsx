@@ -3,15 +3,14 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import {
-  GestureResponderEvent,
-  Modal,
-  Pressable,
-  Text,
-  View,
+    GestureResponderEvent,
+    Modal,
+    Pressable,
+    Text,
+    View,
 } from "react-native";
 
-import { Card } from "@/components/ui/Card";
-import { ThemedText } from "@/components/ui/ThemedText";
+import { Card, ThemedText } from "@/components/ui";
 import type { Locale } from "@/constants/i18n";
 import { Colors, type ColorSchemeName } from "@/constants/theme";
 import { useLanguage } from "@/contexts/language-context";

@@ -30,6 +30,7 @@ const palette = {
     100: "#f1f5f9",
     200: "#e2e8f0", // Border Light
     500: "#64748b", // Text Muted
+    600: "#475569",
     700: "#334155",
     800: "#1e293b", // Border Dark
     900: "#0f172a", // Text Dark
@@ -39,11 +40,11 @@ const palette = {
 export const Colors = {
   light: {
     text: palette.midnight[900],
-    textMuted: palette.slate[500],
+    textMuted: palette.slate[600], // Oscurecido de 500 a 600 para mejor legibilidad
     background: palette.slate[50], // Un blanco roto muy sutil
     card: "#ffffff",
     border: palette.slate[200],
-    primary: palette.emerald[600],
+    primary: palette.emerald[800], // Más oscuro para asegurar contraste con texto blanco
     primarySoft: palette.emerald[100],
     accent: palette.gold[600],
     success: palette.emerald[500],
@@ -136,13 +137,13 @@ export const ClockTheme: Record<
   },
   dark: {
     bezel: "#ffffff",
-    faceBg: palette.midnight[900],
-    nightOverlay: "rgba(15, 23, 42, 0.8)",
+    faceBg: palette.slate[800], // Fondo más claro para que contraste con la noche
+    nightOverlay: "rgba(0, 0, 0, 0.5)", // Noche oscura visible sobre el fondo gris
     hourHand: palette.slate[100],
     minuteHand: palette.slate[100],
     center: palette.emerald[500],
     sun: palette.gold[500],
-    moon: palette.emerald[200], // Luna sutil verdosa
+    moon: palette.emerald[200],
     shadow: "#000000",
   },
 };

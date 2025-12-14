@@ -27,7 +27,8 @@
       "package": "com.salat.prayerapp",
       "permissions": [
         "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION"
+        "ACCESS_COARSE_LOCATION",
+        "USE_FULL_SCREEN_INTENT"
       ]
     },
     "web": {
@@ -37,6 +38,7 @@
     },
     "plugins": [
       "expo-router",
+      "expo-notifications",
       [
         "expo-splash-screen",
         {
@@ -56,7 +58,8 @@
         }
       ],
       "expo-localization",
-      "expo-web-browser"
+      "expo-web-browser",
+      "./lib/with-android-lockscreen-alarm"
     ],
     "experiments": {
       "typedRoutes": true,

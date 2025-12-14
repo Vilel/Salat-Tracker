@@ -1,20 +1,19 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import {
-  GestureResponderEvent,
-  Modal,
-  Pressable,
-  View,
+    GestureResponderEvent,
+    Modal,
+    Pressable,
+    View,
 } from "react-native";
 
+import { Card, ThemedText } from "@/components/ui";
 import {
-  Colors,
-  type ColorSchemeName,
+    Colors,
+    type ColorSchemeName,
 } from "@/constants/theme";
 import { useLanguage } from "@/contexts/language-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { Card } from "./ui/Card";
-import { ThemedText } from "./ui/ThemedText";
 
 export type LocationMode = "auto" | "default";
 
@@ -81,7 +80,7 @@ export function LocationSelector({
 
         <ThemedText
           variant="small"
-          className="font-semibold mr-2"
+          className="font-semibold mr-2 flex-shrink"
           numberOfLines={1}
           style={{
             fontWeight: "600",

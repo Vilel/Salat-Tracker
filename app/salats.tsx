@@ -2,16 +2,15 @@ import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  TouchableOpacity,
+  Modal,
+  Pressable,
+  ScrollView,
   View,
 } from "react-native";
 
-import { Card } from "@/components/ui/Card";
-import { ScreenLayout } from "@/components/ui/ScreenLayout";
-import { ThemedText } from "@/components/ui/ThemedText";
+import { Card, ScreenLayout, ThemedText } from "@/components/ui";
 import {
   Colors,
-  FontSizes,
   type ColorSchemeName,
 } from "@/constants/theme";
 import { useLanguage } from "@/contexts/language-context";
@@ -24,6 +23,7 @@ import {
   getDateKey,
   loadTracker,
   PRAYER_ORDER,
+  PRAYER_STRUCTURE,
   RAKATS,
   saveTracker,
   togglePrayerForDate,
@@ -52,6 +52,7 @@ export default function SalatsScreen() {
 
   const [tracker, setTracker] = useState<TrackerStore>({});
   const [loading, setLoading] = useState(true);
+  const [showInfo, setShowInfo] = useState(false);
 
   const todayKey = getDateKey(new Date());
 
@@ -117,7 +118,7 @@ export default function SalatsScreen() {
   if (loading) {
     return (
       <ScreenLayout scrollable={false}>
-        <View className="flex-1 items-center justify-center">
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <ActivityIndicator size="large" color={theme.primary} />
         </View>
       </ScreenLayout>
@@ -126,43 +127,66 @@ export default function SalatsScreen() {
 
   return (
     <ScreenLayout contentContainerStyle={{ paddingBottom: 40 }}>
-      {/* HEADER (sin icono a la derecha) */}
-      <View className="mb-6 mt-2">
-        <ThemedText variant="title" style={{ letterSpacing: -0.5, fontSize: 28 }}>
-          {t.mySalats.title}
-        </ThemedText>
-        <ThemedText variant="default" color={theme.textMuted} className="mt-1">
-          {t.mySalats.subtitle}
-        </ThemedText>
+      {/* HEADER (con icono de Info a la derecha) */}
+      <View style={{ marginBottom: 24, marginTop: 8, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <View>
+          <ThemedText
+            variant="title"
+            style={{ letterSpacing: -0.5, fontSize: 28 }}
+          >
+            {t.mySalats.title}
+          </ThemedText>
+          <ThemedText variant="default" color={theme.textMuted} style={{ marginTop: 4 }}>
+            {t.mySalats.subtitle}
+          </ThemedText>
+        </View>
+        <Pressable
+          onPress={() => setShowInfo(true)}
+          style={{
+            padding: 8,
+            borderRadius: 9999,
+            backgroundColor: colorScheme === 'dark' ? '#1e293b' : '#f1f5f9', // slate-800 / slate-100
+          }}
+        >
+          <Ionicons
+            name="information-circle-outline"
+            size={24}
+            color={theme.primary}
+          />
+        </Pressable>
       </View>
 
       {/* HERO CARD: RESUMEN DE HOY */}
-      <Card className="mb-6">
-        <View className="flex-row justify-between items-start mb-4">
+      <Card style={{ marginBottom: 24 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
           <View>
-            <ThemedText variant="small" className="font-semibold uppercase opacity-60">
+            <ThemedText variant="small" style={{ fontWeight: '600', textTransform: 'uppercase', opacity: 0.6 }}>
               {t.mySalats.todaySummary}
             </ThemedText>
             <ThemedText
-              className="font-black mt-1"
-              style={{ fontSize: 36, lineHeight: 40 }}
+              adjustsFontSizeToFit
+              numberOfLines={1}
+              minimumFontScale={0.5}
+              style={{ fontSize: 36, lineHeight: 40, fontWeight: '900', marginTop: 4 }}
             >
               {completionPercentage}%
             </ThemedText>
-            <ThemedText variant="small" color={theme.textMuted} className="mt-1">
+            <ThemedText variant="small" color={theme.textMuted} style={{ marginTop: 4 }}>
               {t.mySalats.todaySummaryHint}
             </ThemedText>
           </View>
 
-          <View className="items-end">
-            <View className="flex-row items-baseline">
+          <View style={{ alignItems: 'flex-end', flex: 1, marginLeft: 16 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'flex-end' }}>
               <ThemedText
-                className="font-bold"
-                style={{ fontSize: 24, color: theme.primary }}
+                adjustsFontSizeToFit
+                numberOfLines={1}
+                minimumFontScale={0.5}
+                style={{ fontSize: 24, fontWeight: '700', color: theme.primary }}
               >
                 {doneRakats}
               </ThemedText>
-              <ThemedText variant="small" className="font-medium ml-1" color={theme.textMuted}>
+              <ThemedText variant="small" style={{ fontWeight: '500', marginLeft: 4 }} color={theme.textMuted}>
                 / {totalRakats}
               </ThemedText>
             </View>
@@ -170,21 +194,22 @@ export default function SalatsScreen() {
               Rak‘ats
             </ThemedText>
 
-            <ThemedText variant="small" color={theme.textMuted} className="mt-1">
+            <ThemedText variant="small" color={theme.textMuted} style={{ marginTop: 4, textAlign: 'right' }}>
               {remainingRakats} {t.mySalats.pendingRakatsLabel}
             </ThemedText>
           </View>
         </View>
 
         {/* Barra de Progreso Segmentada (por número de salats completados) */}
-        <View className="flex-row gap-1.5 h-3 mt-2">
+        <View style={{ flexDirection: 'row', gap: 6, height: 12, marginTop: 8 }}>
           {[1, 2, 3, 4, 5].map((_, index) => {
             const isFilled = index < donePrayersCount;
             return (
               <View
                 key={index}
-                className="flex-1 rounded-full"
                 style={{
+                  flex: 1,
+                  borderRadius: 9999,
                   backgroundColor: isFilled
                     ? theme.primary
                     : theme.border,
@@ -197,8 +222,8 @@ export default function SalatsScreen() {
       </Card>
 
       {/* LISTA DE REZOS DE HOY EN UNA SOLA CARD */}
-      <Card className="mb-8">
-        <View className="flex-row items-center justify-between mb-4">
+      <Card style={{ marginBottom: 32 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
           <ThemedText variant="subtitle">
             {t.mySalats.todayPrayers}
           </ThemedText>
@@ -215,16 +240,25 @@ export default function SalatsScreen() {
 
             return (
               <View key={name}>
-                <TouchableOpacity
+                <Pressable
                   onPress={() => handleToggleTodayPrayer(name)}
-                  activeOpacity={0.7}
-                  className="flex-row items-center justify-between"
-                  style={{ paddingVertical: 8 }}
+                  style={({ pressed }) => ({
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    paddingVertical: 12,
+                    opacity: pressed ? 0.7 : 1
+                  })}
                 >
-                  <View className="flex-row items-center">
+                  <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 8 }}>
                     <View
-                      className="w-10 h-10 rounded-full items-center justify-center mr-3"
                       style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 20,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginRight: 12,
                         backgroundColor: done
                           ? theme.primary
                           : theme.background,
@@ -243,11 +277,15 @@ export default function SalatsScreen() {
                       />
                     </View>
 
-                    <View>
+                    <View style={{ flex: 1 }}>
                       <ThemedText
                         variant="default"
-                        className="font-bold capitalize"
+                        numberOfLines={1}
+                        adjustsFontSizeToFit
+                        minimumFontScale={0.8}
                         style={{
+                          textTransform: 'capitalize',
+                          fontWeight: '700',
                           opacity: done ? 0.5 : 1,
                           textDecorationLine: done
                             ? "line-through"
@@ -264,8 +302,10 @@ export default function SalatsScreen() {
 
                   {done && (
                     <View
-                      className="px-3 py-1 rounded-full"
                       style={{
+                        paddingHorizontal: 12,
+                        paddingVertical: 4,
+                        borderRadius: 9999,
                         backgroundColor: theme.primary + "20",
                       }}
                     >
@@ -280,7 +320,7 @@ export default function SalatsScreen() {
                       </ThemedText>
                     </View>
                   )}
-                </TouchableOpacity>
+                </Pressable>
 
                 {index < PRAYER_ORDER.length - 1 && (
                   <View
@@ -299,55 +339,62 @@ export default function SalatsScreen() {
 
       {/* GRÁFICO DE BARRAS SEMANAL (últimos 7 días) */}
       <Card>
-        <View className="flex-row justify-between items-center mb-6">
-          <View>
-            <ThemedText variant="default" className="font-bold">
-              {t.mySalats.historyTitle}
-            </ThemedText>
-            <ThemedText variant="small" color={theme.textMuted} className="opacity-60">
-              {t.mySalats.historySubtitle}
-            </ThemedText>
-          </View>
+        <View style={{ marginBottom: 24 }}>
+          <ThemedText variant="default" style={{ fontWeight: '700' }}>
+            {t.mySalats.historyTitle}
+          </ThemedText>
+          <ThemedText variant="small" color={theme.textMuted} style={{ opacity: 0.6 }}>
+            {t.mySalats.historySubtitle}
+          </ThemedText>
         </View>
 
-        <View className="flex-row justify-between items-end h-32">
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', height: 160, paddingHorizontal: 8 }}>
           {weeklyHistory.map((day) => {
-            const barHeightPct = Math.max(
-              day.progress * 100,
-              5
-            );
+            const barHeightPct = Math.max(day.progress * 100, 0);
 
             return (
               <View
                 key={day.key}
-                className="items-center flex-1"
+                style={{ alignItems: 'center', flex: 1, gap: 8 }}
               >
+                {/* Track de fondo (100% altura) */}
                 <View
-                  className="w-3 rounded-full relative overflow-hidden"
                   style={{
-                    height: `${barHeightPct}%`,
-                    backgroundColor: day.isToday
-                      ? theme.primary
-                      : day.progress > 0
-                      ? theme.primary
-                      : theme.border,
-                    opacity: day.isToday
-                      ? 1
-                      : day.progress > 0
-                      ? 0.4
-                      : 0.3,
+                    width: 16,
+                    borderRadius: 9999,
+                    position: 'relative',
+                    overflow: 'hidden',
+                    flex: 1,
+                    justifyContent: 'flex-end',
+                    backgroundColor: rawScheme === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)",
+                    minHeight: 100,
                   }}
-                />
+                >
+                  {/* Barra de progreso */}
+                  <View
+                    style={{
+                      width: '100%',
+                      borderRadius: 9999,
+                      height: `${barHeightPct}%`,
+                      backgroundColor: day.isToday
+                        ? theme.primary
+                        : day.progress > 0
+                        ? theme.primary
+                        : "transparent",
+                      opacity: day.isToday ? 1 : 0.6,
+                      minHeight: day.progress > 0 ? 8 : 0,
+                    }}
+                  />
+                </View>
 
+                {/* Etiqueta día */}
                 <ThemedText
-                  variant="small"
-                  className="mt-2 font-medium uppercase"
                   style={{
-                    color: day.isToday
-                      ? theme.primary
-                      : theme.textMuted,
-                    fontWeight: day.isToday ? "bold" : "normal",
-                    fontSize: 10
+                    textAlign: 'center',
+                    textTransform: 'uppercase',
+                    color: day.isToday ? theme.primary : theme.textMuted,
+                    fontWeight: day.isToday ? "700" : "500",
+                    fontSize: 11,
                   }}
                 >
                   {day.dayLabel}
@@ -357,6 +404,135 @@ export default function SalatsScreen() {
           })}
         </View>
       </Card>
+
+      {/* MODAL DE INFORMACIÓN */}
+      <Modal
+        visible={showInfo}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowInfo(false)}
+      >
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)', paddingHorizontal: 16 }}>
+          <Card style={{ width: '100%', maxHeight: '80%' }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 16,
+                borderBottomWidth: 1,
+                paddingBottom: 16,
+                borderColor: theme.border
+              }}
+            >
+              <ThemedText variant="subtitle">{t.prayerInfo.title}</ThemedText>
+              <Pressable onPress={() => setShowInfo(false)}>
+                <Ionicons name="close" size={24} color={theme.text} />
+              </Pressable>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <ThemedText style={{ marginBottom: 16, fontStyle: 'italic' }} color={theme.textMuted}>
+                {t.prayerInfo.note}
+              </ThemedText>
+
+              {PRAYER_ORDER.map((prayer) => {
+                const struct = PRAYER_STRUCTURE[prayer];
+                return (
+                  <View key={prayer} style={{ marginBottom: 24 }}>
+                    <ThemedText
+                      variant="default"
+                      style={{ fontWeight: '700', textTransform: 'capitalize', marginBottom: 8 }}
+                      color={theme.primary}
+                    >
+                      {t.prayers[prayer]}
+                    </ThemedText>
+
+                    {/* Visualización de bloques de rakats */}
+                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                      {struct.sunnahBefore && (
+                        <Badge
+                          label={`${struct.sunnahBefore} ${t.prayerInfo.sunnah}`}
+                          type="sunnah"
+                          theme={theme}
+                        />
+                      )}
+
+                      <Badge
+                        label={`${struct.fard} ${t.prayerInfo.fard}`}
+                        type="fard"
+                        theme={theme}
+                      />
+
+                      {struct.sunnahAfter && (
+                        <Badge
+                          label={`${struct.sunnahAfter} ${t.prayerInfo.sunnah}`}
+                          type="sunnah"
+                          theme={theme}
+                        />
+                      )}
+                      {struct.witr && (
+                        <Badge
+                          label={`${struct.witr} ${t.prayerInfo.witr}`}
+                          type="extra"
+                          theme={theme}
+                        />
+                      )}
+                      {struct.nafl && (
+                        <Badge
+                          label={`${struct.nafl} ${t.prayerInfo.nafl}`}
+                          type="extra"
+                          theme={theme}
+                        />
+                      )}
+                    </View>
+                  </View>
+                );
+              })}
+            </ScrollView>
+          </Card>
+        </View>
+      </Modal>
     </ScreenLayout>
+  );
+}
+
+function Badge({
+  label,
+  type,
+  theme,
+}: {
+  label: string;
+  type: "fard" | "sunnah" | "extra";
+  theme: typeof Colors.light;
+}) {
+  let bg = theme.border;
+  let text = theme.text;
+  let border = "transparent";
+
+  if (type === "fard") {
+    bg = theme.primary;
+    text = "#FFFFFF";
+  } else if (type === "sunnah") {
+    bg = theme.background;
+    border = theme.primary;
+    text = theme.primary;
+  }
+
+  return (
+    <View
+      style={{
+        backgroundColor: bg,
+        borderColor: border,
+        borderWidth: 1,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 8
+      }}
+    >
+      <ThemedText style={{ color: text, fontSize: 12, fontWeight: "600" }}>
+        {label}
+      </ThemedText>
+    </View>
   );
 }

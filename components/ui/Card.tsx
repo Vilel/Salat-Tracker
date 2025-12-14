@@ -18,7 +18,7 @@ export function Card({ style, variant = 'elevated', ...otherProps }: CardProps) 
   const shadowStyle =
     variant === 'elevated'
       ? {
-          shadowColor: colorScheme === 'dark' ? '#000' : '#1e293b', // Midnight/Slate dark shadow
+          shadowColor: colorScheme === 'dark' ? '#000' : '#1e293b',
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: colorScheme === 'dark' ? 0.3 : 0.08,
           shadowRadius: 12,
@@ -37,7 +37,7 @@ export function Card({ style, variant = 'elevated', ...otherProps }: CardProps) 
   return (
     <View
       style={[
-        { backgroundColor, borderRadius: 24, padding: 20 }, // Increased padding & radius for modern look
+        { backgroundColor, borderRadius: 24, padding: 20 },
         shadowStyle,
         borderStyle,
         style,

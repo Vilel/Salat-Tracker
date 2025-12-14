@@ -68,10 +68,11 @@ interface AladhanResponse {
 // Llama a la API de Aladhan y devuelve los horarios como DayPrayers
 export async function fetchPrayerTimesFromAPI(
   latitude: number,
-  longitude: number
+  longitude: number,
+  forDate?: Date
 ): Promise<DayPrayers> {
-  const today = new Date();
-  const timestamp = Math.floor(today.getTime() / 1000);
+  const baseDate = forDate ? new Date(forDate) : new Date();
+  const timestamp = Math.floor(baseDate.getTime() / 1000);
 
   const url = `https://api.aladhan.com/v1/timings/${timestamp}?latitude=${latitude}&longitude=${longitude}&method=2`;
 
@@ -94,7 +95,7 @@ export async function fetchPrayerTimesFromAPI(
     const cleanTime = timeStr.split(" ")[0];
     const [hour, minute] = cleanTime.split(":").map(Number);
 
-    const time = new Date(today);
+    const time = new Date(baseDate);
     time.setHours(hour, minute, 0, 0);
 
     return { name, time, hour, minute };
