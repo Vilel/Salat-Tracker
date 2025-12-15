@@ -156,7 +156,7 @@ export function PrayerTimeline({ prayers, nextPrayer }: PrayerTimelineProps) {
               return (
                 <View
                   key={prayerName}
-                  className="items-center z-10"
+                  className="flex-1 items-center z-10"
                 >
                   {/* Círculo exterior que se resalta cuando ya ha ocurrido */}
                   <View
@@ -178,13 +178,13 @@ export function PrayerTimeline({ prayers, nextPrayer }: PrayerTimelineProps) {
                   </View>
 
                   {/* Etiquetas */}
-                  <View className="items-center gap-[1px] w-[52px]">
+                  <View className="items-center gap-[1px] w-full px-1">
                     {/* Nombre del rezo (abreviado) */}
                     <ThemedText
                       variant="small"
                       numberOfLines={1}
                       className={[
-                        "uppercase text-center w-full text-[10px]",
+                        "uppercase text-center w-full text-[9px] leading-[12px]",
                         isNext ? "font-bold opacity-100" : "font-medium opacity-80", // Uniform font weight
                         isNext ? textClass : mutedTextClass,
                       ].join(" ")}
@@ -197,7 +197,7 @@ export function PrayerTimeline({ prayers, nextPrayer }: PrayerTimelineProps) {
                       variant="small"
                       numberOfLines={1}
                       className={[
-                        "text-center w-full text-[11px]",
+                        "text-center w-full text-[11px] leading-[14px]",
                         isNext ? "font-bold" : "font-medium", // Uniform font weight
                         isNext ? textClass : mutedTextClass,
                       ].join(" ")}
