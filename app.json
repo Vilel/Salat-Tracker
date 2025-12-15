@@ -58,8 +58,7 @@
         }
       ],
       "expo-localization",
-      "expo-web-browser",
-      "./lib/with-android-lockscreen-alarm"
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,

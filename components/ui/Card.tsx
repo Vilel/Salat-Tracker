@@ -1,47 +1,35 @@
-import { View, type ViewProps } from 'react-native';
+import { View, type ViewProps } from "react-native";
 
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useColorScheme } from "@/hooks/use-color-scheme";
 
 export type CardProps = ViewProps & {
   variant?: 'elevated' | 'outlined' | 'flat';
+  className?: string;
 };
 
-export function Card({ style, variant = 'elevated', ...otherProps }: CardProps) {
-  const colorScheme = useColorScheme() ?? 'light';
-  const theme = Colors[colorScheme === 'dark' ? 'dark' : 'light'];
+export function Card({
+  className,
+  style,
+  variant = "elevated",
+  ...otherProps
+}: CardProps) {
+  const colorScheme = useColorScheme() ?? "light";
+  const isDark = colorScheme === "dark";
 
-  const backgroundColor = theme.card;
-  const borderColor = theme.border;
-
-  // Shadow styles for iOS and Android
-  const shadowStyle =
-    variant === 'elevated'
-      ? {
-          shadowColor: colorScheme === 'dark' ? '#000' : '#1e293b',
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: colorScheme === 'dark' ? 0.3 : 0.08,
-          shadowRadius: 12,
-          elevation: 4,
-        }
-      : {};
-
-  const borderStyle =
-    variant === 'outlined'
-      ? {
-          borderWidth: 1,
-          borderColor,
-        }
-      : {};
+  const base = "rounded-3xl p-5";
+  const bg = isDark ? "bg-app-card-dark" : "bg-app-card-light";
+  const outline =
+    variant === "outlined"
+      ? isDark
+        ? "border border-app-border-dark"
+        : "border border-app-border-light"
+      : "";
+  const shadow = variant === "elevated" ? "shadow-lg" : "";
 
   return (
     <View
-      style={[
-        { backgroundColor, borderRadius: 24, padding: 20 },
-        shadowStyle,
-        borderStyle,
-        style,
-      ]}
+      className={[base, bg, outline, shadow, className].filter(Boolean).join(" ")}
+      style={style}
       {...otherProps}
     />
   );

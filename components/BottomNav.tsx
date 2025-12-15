@@ -30,6 +30,11 @@ export function BottomNav() {
   const colorScheme: ColorSchemeName =
     rawScheme === "dark" ? "dark" : "light";
   const theme = Colors[colorScheme];
+  const isDark = colorScheme === "dark";
+  const activeTextClass = isDark ? "text-app-primary-dark" : "text-app-primary-light";
+  const inactiveTextClass = isDark ? "text-app-textMuted-dark" : "text-app-textMuted-light";
+  const containerBgClass = isDark ? "bg-app-card-dark" : "bg-app-card-light";
+  const borderClass = isDark ? "border-app-border-dark" : "border-app-border-light";
 
   const pathname = usePathname();
 
@@ -56,18 +61,14 @@ export function BottomNav() {
       key: "settings",
       href: "/settings",
       icon: "settings-outline",
-      label: t.settings?.title ?? "Settings",
+      label: t.settings.title,
     },
   ];
 
   return (
     <View
-      style={{
-        backgroundColor: theme.card,
-        borderTopWidth: 1,
-        borderTopColor: theme.border,
-        paddingBottom: insets.bottom || 8,
-      }}
+      className={["border-t", containerBgClass, borderClass].join(" ")}
+      style={{ paddingBottom: insets.bottom || 8 }}
     >
       <View className="flex-row">
         {items.map((item) => {
@@ -79,22 +80,15 @@ export function BottomNav() {
           const iconColor = isActive
             ? theme.primary
             : theme.textMuted;
-          const textColor = isActive
-            ? theme.primary
-            : theme.textMuted;
 
           return (
             <Pressable
               key={item.key}
-              className="flex-1 items-center justify-center"
+              className="flex-1 items-center justify-center py-2 active:opacity-70"
               onPress={() => {
                 if (isActive) return;
                 router.replace(item.href);
               }}
-              style={({ pressed }) => ({
-                opacity: pressed ? 0.7 : 1,
-                paddingVertical: 8,
-              })}
             >
               <Ionicons
                 name={item.icon}
@@ -103,12 +97,11 @@ export function BottomNav() {
               />
               <ThemedText
                 variant="small"
-                style={{
-                  marginTop: 2,
-                  fontWeight: isActive ? "700" : "500",
-                  color: textColor,
-                  fontSize: 10,
-                }}
+                color={isActive ? theme.primary : theme.textMuted}
+                className={[
+                  "mt-0.5 text-[10px]",
+                  isActive ? "font-bold" : "font-medium",
+                ].join(" ")}
               >
                 {item.label}
               </ThemedText>

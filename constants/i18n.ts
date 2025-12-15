@@ -8,6 +8,11 @@ export const SUPPORTED_LOCALES: Locale[] = ["es", "en", "fr", "nl"];
 
 export const TRANSLATIONS = {
   es: {
+    common: {
+      close: "Cerrar",
+      progress: "Progreso",
+      salats: "Salats",
+    },
     loading: "Cargando...",
     retry: "Reintentar",
     nextPrayer: "Próximo rezo",
@@ -28,14 +33,19 @@ export const TRANSLATIONS = {
       mySalats: "Mis Salats",
       qada: "Qadá",
     },
+    home: {
+      title: "Inicio",
+      subtitle: "Horarios de rezos y próximo rezo según tu ubicación",
+    },
     settings: {
       title: "Ajustes",
+      subtitle: "Notificaciones, colores y preferencias",
       language: "Idioma",
       prayerColors: "Colores de rezos",
-      prayerColorsSubtitle: "Personaliza el color de cada oración en el reloj",
+      prayerColorsSubtitle: "Personaliza los colores en el reloj analógico",
       resetColors: "Restaurar colores",
       alarmsTitle: "Notificaciones",
-      alarmsSubtitle: "Vibración y avisos para cada rezo",
+      alarmsSubtitle: "Configura avisos para cada oración",
       alarmsRequiresDevBuild: "No disponible en Expo Go. Usa un Development Build para alarmas.",
       alarmsPermissionLabel: "Permiso de notificaciones",
       alarmsPermissionGranted: "Concedido",
@@ -52,7 +62,7 @@ export const TRANSLATIONS = {
     },
     mySalats: {
       title: "Mis Salats",
-      subtitle: "Seguimiento diario",
+      subtitle: "Registro diario de oraciones",
       todaySummary: "Resumen de hoy",
       todaySummaryHint: "de rezos completados",
       pendingRakatsLabel: "rak‘ats pendientes",
@@ -73,11 +83,12 @@ export const TRANSLATIONS = {
     },
     alarm: {
       swipeToDismiss: "Desliza para cerrar",
+      subtitle: "Desliza o toca para cerrar la alarma",
       notificationBody: "Hora del rezo:",
     },
     qada: {
       title: "Qadá",
-      subtitle: "Compensación de rezos",
+      subtitle: "Gestión de oraciones pendientes",
       summaryTitle: "Balance total",
       summaryDetailsTitle: "Detalles",
       missedLabel: "perdidos",
@@ -89,13 +100,20 @@ export const TRANSLATIONS = {
       inputPlaceholder: "Nº de rak‘ats",
       registerButton: "Registrar",
       historyTitle: "Historial de recuperaciones",
+      historySubtitle: "Toca una fecha para editar",
       historyEmpty: "No hay registros aún",
+      editDaySubtitle: "Marca los rezos completados ese día",
     },
     errors: {
       fetchFailed: "Error al cargar horarios",
     },
   },
   en: {
+    common: {
+      close: "Close",
+      progress: "Progress",
+      salats: "Salats",
+    },
     loading: "Loading...",
     retry: "Retry",
     nextPrayer: "Next Prayer",
@@ -116,14 +134,19 @@ export const TRANSLATIONS = {
       mySalats: "My Salats",
       qada: "Qada",
     },
+    home: {
+      title: "Home",
+      subtitle: "Prayer times and next prayer for your location",
+    },
     settings: {
       title: "Settings",
+      subtitle: "Notifications, colors, and preferences",
       language: "Language",
       prayerColors: "Prayer Colors",
-      prayerColorsSubtitle: "Customize the color of each prayer on the clock",
+      prayerColorsSubtitle: "Customize colors on the analog clock",
       resetColors: "Reset colors",
       alarmsTitle: "Notifications",
-      alarmsSubtitle: "Vibration and alerts for each prayer",
+      alarmsSubtitle: "Configure alerts for each prayer",
       alarmsRequiresDevBuild: "Not available in Expo Go. Use a Development Build for alarms.",
       alarmsPermissionLabel: "Notification permission",
       alarmsPermissionGranted: "Granted",
@@ -140,7 +163,7 @@ export const TRANSLATIONS = {
     },
     mySalats: {
       title: "My Salats",
-      subtitle: "Daily tracking",
+      subtitle: "Daily prayer log",
       todaySummary: "Today's Summary",
       todaySummaryHint: "of prayers completed",
       pendingRakatsLabel: "rakats pending",
@@ -161,11 +184,12 @@ export const TRANSLATIONS = {
     },
     alarm: {
       swipeToDismiss: "Slide to dismiss",
+      subtitle: "Swipe or tap to dismiss the alarm",
       notificationBody: "Time for:",
     },
     qada: {
       title: "Qada",
-      subtitle: "Missed prayers compensation",
+      subtitle: "Missed prayers management",
       summaryTitle: "Total Balance",
       summaryDetailsTitle: "Details",
       missedLabel: "missed",
@@ -177,13 +201,20 @@ export const TRANSLATIONS = {
       inputPlaceholder: "# of rakats",
       registerButton: "Register",
       historyTitle: "Clearance History",
+      historySubtitle: "Tap a date to edit",
       historyEmpty: "No records yet",
+      editDaySubtitle: "Mark the prayers you completed that day",
     },
     errors: {
       fetchFailed: "Failed to load prayer times",
     },
   },
   fr: {
+    common: {
+      close: "Fermer",
+      progress: "Progression",
+      salats: "Salats",
+    },
     loading: "Chargement...",
     retry: "Réessayer",
     nextPrayer: "Prochaine prière",
@@ -204,14 +235,19 @@ export const TRANSLATIONS = {
       mySalats: "Mes Salats",
       qada: "Qada",
     },
+    home: {
+      title: "Accueil",
+      subtitle: "Horaires et prochaine prière selon votre emplacement",
+    },
     settings: {
       title: "Paramètres",
+      subtitle: "Notifications, couleurs et préférences",
       language: "Langue",
       prayerColors: "Couleurs des prières",
-      prayerColorsSubtitle: "Personnalisez la couleur de chaque prière sur l'horloge",
+      prayerColorsSubtitle: "Personnalisez les couleurs de l'horloge analogique",
       resetColors: "Réinitialiser les couleurs",
       alarmsTitle: "Notifications",
-      alarmsSubtitle: "Vibration et alertes pour chaque prière",
+      alarmsSubtitle: "Configurez les alertes pour chaque prière",
       alarmsRequiresDevBuild: "Indisponible dans Expo Go. Utilisez un Development Build pour les alarmes.",
       alarmsPermissionLabel: "Autorisation de notifications",
       alarmsPermissionGranted: "Accordée",
@@ -228,7 +264,7 @@ export const TRANSLATIONS = {
     },
     mySalats: {
       title: "Mes Salats",
-      subtitle: "Suivi quotidien",
+      subtitle: "Journal quotidien des prières",
       todaySummary: "Résumé d'aujourd'hui",
       todaySummaryHint: "de prières terminées",
       pendingRakatsLabel: "rakats en attente",
@@ -249,11 +285,12 @@ export const TRANSLATIONS = {
     },
     alarm: {
       swipeToDismiss: "Glissez pour fermer",
+      subtitle: "Glissez ou touchez pour fermer l'alarme",
       notificationBody: "Heure de la prière :",
     },
     qada: {
       title: "Qada",
-      subtitle: "Compensation des prières manquées",
+      subtitle: "Gestion des prières manquées",
       summaryTitle: "Bilan total",
       summaryDetailsTitle: "Détails",
       missedLabel: "manqués",
@@ -265,13 +302,20 @@ export const TRANSLATIONS = {
       inputPlaceholder: "# de rakats",
       registerButton: "Enregistrer",
       historyTitle: "Historique",
+      historySubtitle: "Touchez une date pour modifier",
       historyEmpty: "Aucun enregistrement",
+      editDaySubtitle: "Marquez les prières complétées ce jour-là",
     },
     errors: {
       fetchFailed: "Échec du chargement des horaires",
     },
   },
   nl: {
+    common: {
+      close: "Sluiten",
+      progress: "Voortgang",
+      salats: "Salats",
+    },
     loading: "Laden...",
     retry: "Opnieuw proberen",
     nextPrayer: "Volgend gebed",
@@ -292,14 +336,19 @@ export const TRANSLATIONS = {
       mySalats: "Mijn Salats",
       qada: "Qada",
     },
+    home: {
+      title: "Start",
+      subtitle: "Gebedstijden en volgend gebed voor jouw locatie",
+    },
     settings: {
       title: "Instellingen",
+      subtitle: "Meldingen, kleuren en voorkeuren",
       language: "Taal",
       prayerColors: "Gebedskleuren",
-      prayerColorsSubtitle: "Pas de kleur van elk gebed op de klok aan",
+      prayerColorsSubtitle: "Pas de kleuren op de analoge klok aan",
       resetColors: "Kleuren resetten",
       alarmsTitle: "Meldingen",
-      alarmsSubtitle: "Trillingen en waarschuwingen voor elk gebed",
+      alarmsSubtitle: "Waarschuwingen configureren voor elk gebed",
       alarmsRequiresDevBuild: "Niet beschikbaar in Expo Go. Gebruik een Development Build voor alarmen.",
       alarmsPermissionLabel: "Meldingsmachtiging",
       alarmsPermissionGranted: "Toegestaan",
@@ -316,7 +365,7 @@ export const TRANSLATIONS = {
     },
     mySalats: {
       title: "Mijn Salats",
-      subtitle: "Dagelijkse tracking",
+      subtitle: "Dagelijks gebedslogboek",
       todaySummary: "Vandaag Samenvatting",
       todaySummaryHint: "van voltooide gebeden",
       pendingRakatsLabel: "rakats in behandeling",
@@ -337,11 +386,12 @@ export const TRANSLATIONS = {
     },
     alarm: {
       swipeToDismiss: "Veeg om te sluiten",
+      subtitle: "Veeg of tik om het alarm te sluiten",
       notificationBody: "Tijd voor:",
     },
     qada: {
       title: "Qada",
-      subtitle: "Gemiste gebeden inhalen",
+      subtitle: "Beheer van gemiste gebeden",
       summaryTitle: "Totaal Balans",
       summaryDetailsTitle: "Details",
       missedLabel: "gemist",
@@ -353,10 +403,14 @@ export const TRANSLATIONS = {
       inputPlaceholder: "# rakats",
       registerButton: "Registreren",
       historyTitle: "Geschiedenis",
+      historySubtitle: "Tik op een datum om te bewerken",
       historyEmpty: "Nog geen records",
+      editDaySubtitle: "Markeer de gebeden die je die dag hebt gedaan",
     },
     errors: {
       fetchFailed: "Laden van gebedstijden mislukt",
     },
   },
 };
+
+export type Translations = (typeof TRANSLATIONS)[Locale];

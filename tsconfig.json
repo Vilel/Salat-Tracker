@@ -8,6 +8,12 @@
       ]
     }
   },
+  "exclude": [
+    "node_modules",
+    "__tests__",
+    "jest.config.js",
+    "jest.setup.js"
+  ],
   "include": [
     "**/*.ts",
     "**/*.tsx",

@@ -1,6 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { Colors } from "./theme";
 
 // Tipos de colores por rezo
 export type PrayerColors = {

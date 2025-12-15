@@ -5,16 +5,18 @@ import {
   Modal,
   Pressable,
   ScrollView,
+  Text,
   View,
 } from "react-native";
 
-import { Card, ScreenLayout, ThemedText } from "@/components/ui";
+import { Card, Divider, ScreenHeader, ScreenLayout } from "@/components/ui";
 import {
   Colors,
   type ColorSchemeName,
 } from "@/constants/theme";
 import { useLanguage } from "@/contexts/language-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { toLocaleTag } from "@/lib/locale";
 import type { PrayerName } from "@/lib/prayer-times";
 
 import {
@@ -34,21 +36,38 @@ import {
 type WeeklyHistoryDay = {
   key: string;
   dayLabel: string;
-  progress: number; // 0–1
+  progress: number;
   isToday: boolean;
 };
 
-function getDayLabel(dateString: string): string {
+function getDayLabel(dateString: string, localeTag: string): string {
   const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", { weekday: "narrow" });
+  return date.toLocaleDateString(localeTag, { weekday: "narrow" });
 }
 
 export default function SalatsScreen() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const rawScheme = useColorScheme();
   const colorScheme: ColorSchemeName =
     rawScheme === "dark" ? "dark" : "light";
   const theme = Colors[colorScheme];
+  const isDark = colorScheme === "dark";
+
+  const textClass = isDark ? "text-app-text-dark" : "text-app-text-light";
+  const textMutedClass = isDark
+    ? "text-app-textMuted-dark"
+    : "text-app-textMuted-light";
+  const primaryBgClass = isDark ? "bg-app-primary-dark" : "bg-app-primary-light";
+  const primaryTextClass = isDark
+    ? "text-app-primary-dark"
+    : "text-app-primary-light";
+  const borderBgClass = isDark ? "bg-app-border-dark" : "bg-app-border-light";
+  const borderColorClass = isDark
+    ? "border-app-border-dark"
+    : "border-app-border-light";
+  const chartTrackBgClass = isDark
+    ? "bg-app-border-dark/40"
+    : "bg-app-border-light/60";
 
   const [tracker, setTracker] = useState<TrackerStore>({});
   const [loading, setLoading] = useState(true);
@@ -92,6 +111,7 @@ export default function SalatsScreen() {
 
   const weeklyHistory = useMemo<WeeklyHistoryDay[]>(() => {
     const days: WeeklyHistoryDay[] = [];
+    const localeTag = toLocaleTag(locale);
 
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
@@ -106,19 +126,19 @@ export default function SalatsScreen() {
 
       days.push({
         key: k,
-        dayLabel: getDayLabel(k),
+        dayLabel: getDayLabel(k, localeTag),
         progress,
         isToday: k === todayKey,
       });
     }
 
     return days;
-  }, [tracker, todayKey]);
+  }, [locale, tracker, todayKey]);
 
   if (loading) {
     return (
       <ScreenLayout scrollable={false}>
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color={theme.primary} />
         </View>
       </ScreenLayout>
@@ -126,373 +146,279 @@ export default function SalatsScreen() {
   }
 
   return (
-    <ScreenLayout contentContainerStyle={{ paddingBottom: 40 }}>
-      {/* HEADER (con icono de Info a la derecha) */}
-      <View style={{ marginBottom: 24, marginTop: 8, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <View>
-          <ThemedText
-            variant="title"
-            style={{ letterSpacing: -0.5, fontSize: 28 }}
-          >
-            {t.mySalats.title}
-          </ThemedText>
-          <ThemedText variant="default" color={theme.textMuted} style={{ marginTop: 4 }}>
-            {t.mySalats.subtitle}
-          </ThemedText>
-        </View>
-        <Pressable
-          onPress={() => setShowInfo(true)}
-          style={{
-            padding: 8,
-            borderRadius: 9999,
-            backgroundColor: colorScheme === 'dark' ? '#1e293b' : '#f1f5f9', // slate-800 / slate-100
-          }}
-        >
-          <Ionicons
-            name="information-circle-outline"
-            size={24}
-            color={theme.primary}
-          />
-        </Pressable>
-      </View>
-
-      {/* HERO CARD: RESUMEN DE HOY */}
-      <Card style={{ marginBottom: 24 }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-          <View>
-            <ThemedText variant="small" style={{ fontWeight: '600', textTransform: 'uppercase', opacity: 0.6 }}>
-              {t.mySalats.todaySummary}
-            </ThemedText>
-            <ThemedText
-              adjustsFontSizeToFit
-              numberOfLines={1}
-              minimumFontScale={0.5}
-              style={{ fontSize: 36, lineHeight: 40, fontWeight: '900', marginTop: 4 }}
+    <ScreenLayout>
+      <View className="pb-10">
+        <ScreenHeader
+          title={t.mySalats.title}
+          subtitle={t.mySalats.subtitle}
+          right={
+            <Pressable
+              onPress={() => setShowInfo(true)}
+              accessibilityRole="button"
+              accessibilityLabel={t.prayerInfo.title}
+              hitSlop={10}
+              className={`rounded-full p-2 active:opacity-70 ${isDark ? "bg-app-border-dark" : "bg-app-border-light"}`}
             >
-              {completionPercentage}%
-            </ThemedText>
-            <ThemedText variant="small" color={theme.textMuted} style={{ marginTop: 4 }}>
-              {t.mySalats.todaySummaryHint}
-            </ThemedText>
-          </View>
-
-          <View style={{ alignItems: 'flex-end', flex: 1, marginLeft: 16 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'flex-end' }}>
-              <ThemedText
-                adjustsFontSizeToFit
-                numberOfLines={1}
-                minimumFontScale={0.5}
-                style={{ fontSize: 24, fontWeight: '700', color: theme.primary }}
-              >
-                {doneRakats}
-              </ThemedText>
-              <ThemedText variant="small" style={{ fontWeight: '500', marginLeft: 4 }} color={theme.textMuted}>
-                / {totalRakats}
-              </ThemedText>
-            </View>
-            <ThemedText variant="small" color={theme.textMuted}>
-              Rak‘ats
-            </ThemedText>
-
-            <ThemedText variant="small" color={theme.textMuted} style={{ marginTop: 4, textAlign: 'right' }}>
-              {remainingRakats} {t.mySalats.pendingRakatsLabel}
-            </ThemedText>
-          </View>
-        </View>
-
-        {/* Barra de Progreso Segmentada (por número de salats completados) */}
-        <View style={{ flexDirection: 'row', gap: 6, height: 12, marginTop: 8 }}>
-          {[1, 2, 3, 4, 5].map((_, index) => {
-            const isFilled = index < donePrayersCount;
-            return (
-              <View
-                key={index}
-                style={{
-                  flex: 1,
-                  borderRadius: 9999,
-                  backgroundColor: isFilled
-                    ? theme.primary
-                    : theme.border,
-                  opacity: isFilled ? 1 : 0.3,
-                }}
+              <Ionicons
+                name="information-circle-outline"
+                size={24}
+                color={theme.primary}
               />
-            );
-          })}
-        </View>
-      </Card>
+            </Pressable>
+          }
+        />
 
-      {/* LISTA DE REZOS DE HOY EN UNA SOLA CARD */}
-      <Card style={{ marginBottom: 32 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <ThemedText variant="subtitle">
-            {t.mySalats.todayPrayers}
-          </ThemedText>
-          <ThemedText variant="small" color={theme.textMuted}>
-            {donePrayersCount} / {PRAYER_ORDER.length}
-          </ThemedText>
-        </View>
-
-        <View>
-          {PRAYER_ORDER.map((name, index) => {
-            const done = todayStatus[name];
-            const rakats = RAKATS[name];
-            const label = t.prayers[name];
-
-            return (
-              <View key={name}>
-                <Pressable
-                  onPress={() => handleToggleTodayPrayer(name)}
-                  style={({ pressed }) => ({
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    paddingVertical: 12,
-                    opacity: pressed ? 0.7 : 1
-                  })}
+        {/* HERO CARD: RESUMEN DE HOY */}
+        <View className="mb-6">
+          <Card>
+            <View className="mb-4 flex-row items-start justify-between">
+              <View>
+                <Text className={`text-xs font-semibold uppercase opacity-60 ${textMutedClass}`}>
+                  {t.mySalats.todaySummary}
+                </Text>
+                <Text
+                  adjustsFontSizeToFit
+                  numberOfLines={1}
+                  minimumFontScale={0.5}
+                  className={`mt-1 text-4xl font-black leading-10 ${textClass}`}
                 >
-                  <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 8 }}>
-                    <View
-                      style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: 20,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        marginRight: 12,
-                        backgroundColor: done
-                          ? theme.primary
-                          : theme.background,
-                        borderWidth: done ? 0 : 1,
-                        borderColor: done
-                          ? theme.primary
-                          : theme.border,
-                      }}
-                    >
-                      <Ionicons
-                        name={
-                          done ? "checkmark" : "ellipse-outline"
-                        }
-                        size={20}
-                        color={done ? "#fff" : theme.textMuted}
-                      />
-                    </View>
+                  {completionPercentage}%
+                </Text>
+                <Text className={`mt-1 text-xs ${textMutedClass}`}>
+                  {t.mySalats.todaySummaryHint}
+                </Text>
+              </View>
 
-                    <View style={{ flex: 1 }}>
-                      <ThemedText
-                        variant="default"
+              <View className="ml-4 flex-1 items-end">
+                <View className="flex-row items-baseline justify-end">
+                  <Text
+                    adjustsFontSizeToFit
+                    numberOfLines={1}
+                    minimumFontScale={0.5}
+                    className={`text-2xl font-bold ${primaryTextClass}`}
+                  >
+                    {doneRakats}
+                  </Text>
+                  <Text className={`ml-1 text-xs font-medium ${textMutedClass}`}>
+                    / {totalRakats}
+                  </Text>
+                </View>
+                <Text className={`text-xs ${textMutedClass}`}>Rak&apos;ats</Text>
+
+                <Text className={`mt-1 text-xs text-right ${textMutedClass}`}>
+                  {remainingRakats} {t.mySalats.pendingRakatsLabel}
+                </Text>
+              </View>
+            </View>
+
+            {/* Barra de Progreso Segmentada */}
+            <View className="mt-2 h-3 flex-row gap-1.5">
+              {[1, 2, 3, 4, 5].map((_, index) => {
+                const isFilled = index < donePrayersCount;
+                return (
+                  <View
+                    key={index}
+                    className={`flex-1 rounded-full ${isFilled ? primaryBgClass : borderBgClass} ${isFilled ? "opacity-100" : "opacity-30"}`}
+                  />
+                );
+              })}
+            </View>
+          </Card>
+        </View>
+
+        {/* LISTA DE REZOS DE HOY */}
+        <View className="mb-8">
+          <Card>
+            <View className="mb-4 flex-row items-center justify-between">
+              <Text className={`text-xl font-semibold ${textClass}`}>
+                {t.mySalats.todayPrayers}
+              </Text>
+              <Text className={`text-xs ${textMutedClass}`}>
+                {donePrayersCount} / {PRAYER_ORDER.length}
+              </Text>
+            </View>
+
+            <View className="mt-2">
+              {PRAYER_ORDER.map((name, index) => {
+                const done = todayStatus[name];
+                const rakats = RAKATS[name];
+                const label = t.prayers[name];
+
+                return (
+                  <View key={name}>
+                    <Pressable
+                      onPress={() => handleToggleTodayPrayer(name)}
+                      accessibilityRole="button"
+                      accessibilityLabel={label}
+                      android_ripple={{ color: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)" }}
+                      className="flex-row items-center px-4 py-4 active:opacity-70"
+                    >
+                      {/* CHECKBOX */}
+                      <View
+                        className={
+                          done
+                            ? `mr-4 h-8 w-8 items-center justify-center rounded-full ${primaryBgClass}`
+                            : `mr-4 h-8 w-8 items-center justify-center rounded-full border-2 ${borderColorClass}`
+                        }
+                      >
+                        {done ? <Ionicons name="checkmark" size={18} color="#fff" /> : null}
+                      </View>
+
+                      {/* NOMBRE */}
+                      <Text
                         numberOfLines={1}
-                        adjustsFontSizeToFit
-                        minimumFontScale={0.8}
-                        style={{
-                          textTransform: 'capitalize',
-                          fontWeight: '700',
-                          opacity: done ? 0.5 : 1,
-                          textDecorationLine: done
-                            ? "line-through"
-                            : "none",
-                        }}
+                        className={`flex-1 text-[17px] font-bold ${textClass}`}
                       >
                         {label}
-                      </ThemedText>
-                      <ThemedText variant="small" color={theme.textMuted}>
-                        {rakats} rak‘ats
-                      </ThemedText>
-                    </View>
-                  </View>
+                      </Text>
 
-                  {done && (
-                    <View
-                      style={{
-                        paddingHorizontal: 12,
-                        paddingVertical: 4,
-                        borderRadius: 9999,
-                        backgroundColor: theme.primary + "20",
-                      }}
-                    >
-                      <ThemedText
-                        style={{
-                          fontSize: 10,
-                          fontWeight: "700",
-                          color: theme.primary,
-                        }}
-                      >
-                        {t.mySalats.statusDone.toUpperCase()}
-                      </ThemedText>
-                    </View>
-                  )}
-                </Pressable>
+                      {/* RAKATS */}
+                      <View className="flex-row items-center gap-1.5">
+                        <Text
+                          className={`text-[17px] font-bold ${done ? primaryTextClass : textClass}`}
+                        >
+                          {rakats}
+                        </Text>
+                        <Text className={`text-[13px] font-medium ${textMutedClass}`}>
+                          {t.prayerInfo.rakats.toLowerCase()}
+                        </Text>
+                      </View>
+                    </Pressable>
 
-                {index < PRAYER_ORDER.length - 1 && (
-                  <View
-                    style={{
-                      height: 1,
-                      backgroundColor: theme.border,
-                      marginVertical: 6,
-                    }}
-                  />
-                )}
-              </View>
-            );
-          })}
-        </View>
-      </Card>
-
-      {/* GRÁFICO DE BARRAS SEMANAL (últimos 7 días) */}
-      <Card>
-        <View style={{ marginBottom: 24 }}>
-          <ThemedText variant="default" style={{ fontWeight: '700' }}>
-            {t.mySalats.historyTitle}
-          </ThemedText>
-          <ThemedText variant="small" color={theme.textMuted} style={{ opacity: 0.6 }}>
-            {t.mySalats.historySubtitle}
-          </ThemedText>
-        </View>
-
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', height: 160, paddingHorizontal: 8 }}>
-          {weeklyHistory.map((day) => {
-            const barHeightPct = Math.max(day.progress * 100, 0);
-
-            return (
-              <View
-                key={day.key}
-                style={{ alignItems: 'center', flex: 1, gap: 8 }}
-              >
-                {/* Track de fondo (100% altura) */}
-                <View
-                  style={{
-                    width: 16,
-                    borderRadius: 9999,
-                    position: 'relative',
-                    overflow: 'hidden',
-                    flex: 1,
-                    justifyContent: 'flex-end',
-                    backgroundColor: rawScheme === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)",
-                    minHeight: 100,
-                  }}
-                >
-                  {/* Barra de progreso */}
-                  <View
-                    style={{
-                      width: '100%',
-                      borderRadius: 9999,
-                      height: `${barHeightPct}%`,
-                      backgroundColor: day.isToday
-                        ? theme.primary
-                        : day.progress > 0
-                        ? theme.primary
-                        : "transparent",
-                      opacity: day.isToday ? 1 : 0.6,
-                      minHeight: day.progress > 0 ? 8 : 0,
-                    }}
-                  />
-                </View>
-
-                {/* Etiqueta día */}
-                <ThemedText
-                  style={{
-                    textAlign: 'center',
-                    textTransform: 'uppercase',
-                    color: day.isToday ? theme.primary : theme.textMuted,
-                    fontWeight: day.isToday ? "700" : "500",
-                    fontSize: 11,
-                  }}
-                >
-                  {day.dayLabel}
-                </ThemedText>
-              </View>
-            );
-          })}
-        </View>
-      </Card>
-
-      {/* MODAL DE INFORMACIÓN */}
-      <Modal
-        visible={showInfo}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowInfo(false)}
-      >
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)', paddingHorizontal: 16 }}>
-          <Card style={{ width: '100%', maxHeight: '80%' }}>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: 16,
-                borderBottomWidth: 1,
-                paddingBottom: 16,
-                borderColor: theme.border
-              }}
-            >
-              <ThemedText variant="subtitle">{t.prayerInfo.title}</ThemedText>
-              <Pressable onPress={() => setShowInfo(false)}>
-                <Ionicons name="close" size={24} color={theme.text} />
-              </Pressable>
-            </View>
-
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <ThemedText style={{ marginBottom: 16, fontStyle: 'italic' }} color={theme.textMuted}>
-                {t.prayerInfo.note}
-              </ThemedText>
-
-              {PRAYER_ORDER.map((prayer) => {
-                const struct = PRAYER_STRUCTURE[prayer];
-                return (
-                  <View key={prayer} style={{ marginBottom: 24 }}>
-                    <ThemedText
-                      variant="default"
-                      style={{ fontWeight: '700', textTransform: 'capitalize', marginBottom: 8 }}
-                      color={theme.primary}
-                    >
-                      {t.prayers[prayer]}
-                    </ThemedText>
-
-                    {/* Visualización de bloques de rakats */}
-                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                      {struct.sunnahBefore && (
-                        <Badge
-                          label={`${struct.sunnahBefore} ${t.prayerInfo.sunnah}`}
-                          type="sunnah"
-                          theme={theme}
-                        />
-                      )}
-
-                      <Badge
-                        label={`${struct.fard} ${t.prayerInfo.fard}`}
-                        type="fard"
-                        theme={theme}
-                      />
-
-                      {struct.sunnahAfter && (
-                        <Badge
-                          label={`${struct.sunnahAfter} ${t.prayerInfo.sunnah}`}
-                          type="sunnah"
-                          theme={theme}
-                        />
-                      )}
-                      {struct.witr && (
-                        <Badge
-                          label={`${struct.witr} ${t.prayerInfo.witr}`}
-                          type="extra"
-                          theme={theme}
-                        />
-                      )}
-                      {struct.nafl && (
-                        <Badge
-                          label={`${struct.nafl} ${t.prayerInfo.nafl}`}
-                          type="extra"
-                          theme={theme}
-                        />
-                      )}
-                    </View>
+                    {index < PRAYER_ORDER.length - 1 ? (
+                      <Divider insetClassName="ml-16" />
+                    ) : null}
                   </View>
                 );
               })}
-            </ScrollView>
+            </View>
           </Card>
         </View>
-      </Modal>
+
+        {/* GRÁFICO DE BARRAS SEMANAL */}
+        <Card>
+          <View className="mb-6">
+            <Text className={`text-base font-bold ${textClass}`}>
+              {t.mySalats.historyTitle}
+            </Text>
+            <Text className={`mt-1 text-xs opacity-60 ${textMutedClass}`}>
+              {t.mySalats.historySubtitle}
+            </Text>
+          </View>
+
+          <View className="h-40 flex-row items-end justify-between px-2">
+            {weeklyHistory.map((day) => {
+              const filledSegments = Math.max(0, Math.min(10, Math.ceil(day.progress * 10)));
+
+              return (
+                <View
+                  key={day.key}
+                  className="flex-1 items-center gap-2"
+                >
+                  <View className={`w-4 min-h-[100px] flex-1 justify-end overflow-hidden rounded-full ${chartTrackBgClass}`}>
+                    <View
+                      style={{ height: `${day.progress * 100}%` }}
+                      className={`w-full rounded-full ${primaryBgClass} ${day.isToday ? "opacity-100" : "opacity-60"}`}
+                    />
+                  </View>
+
+                  <Text
+                    className={`text-[11px] uppercase ${day.isToday ? `${primaryTextClass} font-bold` : `${textMutedClass} font-medium`}`}
+                  >
+                    {day.dayLabel}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+        </Card>
+
+        {/* MODAL DE INFORMACIÓN */}
+        <Modal
+          visible={showInfo}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowInfo(false)}
+        >
+          <View className="flex-1 items-center justify-center bg-black/50 px-4">
+            <View className="w-full max-h-[80%]">
+              <Card>
+                <View className={`mb-4 flex-row items-center justify-between border-b pb-4 ${borderColorClass}`}>
+                  <Text className={`text-xl font-semibold ${textClass}`}>
+                    {t.prayerInfo.title}
+                  </Text>
+                  <Pressable
+                    onPress={() => setShowInfo(false)}
+                    accessibilityRole="button"
+                    accessibilityLabel={t.common.close}
+                    hitSlop={10}
+                    className="-m-1 p-1 active:opacity-70"
+                  >
+                    <Ionicons name="close" size={24} color={theme.text} />
+                  </Pressable>
+                </View>
+
+                <ScrollView showsVerticalScrollIndicator={false}>
+                  <Text className={`mb-4 italic ${textMutedClass}`}>
+                    {t.prayerInfo.note}
+                  </Text>
+
+                  {PRAYER_ORDER.map((prayer) => {
+                    const struct = PRAYER_STRUCTURE[prayer];
+                    return (
+                      <View key={prayer} className="mb-6">
+                        <Text className={`mb-2 font-bold capitalize ${primaryTextClass}`}>
+                          {t.prayers[prayer]}
+                        </Text>
+
+                        <View className="flex-row flex-wrap gap-2">
+                          {struct.sunnahBefore ? (
+                            <Badge
+                              label={`${struct.sunnahBefore} ${t.prayerInfo.sunnah}`}
+                              type="sunnah"
+                              isDark={isDark}
+                            />
+                          ) : null}
+
+                          <Badge
+                            label={`${struct.fard} ${t.prayerInfo.fard}`}
+                            type="fard"
+                            isDark={isDark}
+                          />
+
+                          {struct.sunnahAfter ? (
+                            <Badge
+                              label={`${struct.sunnahAfter} ${t.prayerInfo.sunnah}`}
+                              type="sunnah"
+                              isDark={isDark}
+                            />
+                          ) : null}
+
+                          {struct.witr ? (
+                            <Badge
+                              label={`${struct.witr} ${t.prayerInfo.witr}`}
+                              type="extra"
+                              isDark={isDark}
+                            />
+                          ) : null}
+
+                          {struct.nafl ? (
+                            <Badge
+                              label={`${struct.nafl} ${t.prayerInfo.nafl}`}
+                              type="extra"
+                              isDark={isDark}
+                            />
+                          ) : null}
+                        </View>
+                      </View>
+                    );
+                  })}
+                </ScrollView>
+              </Card>
+            </View>
+          </View>
+        </Modal>
+      </View>
     </ScreenLayout>
   );
 }
@@ -500,39 +426,39 @@ export default function SalatsScreen() {
 function Badge({
   label,
   type,
-  theme,
+  isDark,
 }: {
   label: string;
   type: "fard" | "sunnah" | "extra";
-  theme: typeof Colors.light;
+  isDark: boolean;
 }) {
-  let bg = theme.border;
-  let text = theme.text;
-  let border = "transparent";
-
-  if (type === "fard") {
-    bg = theme.primary;
-    text = "#FFFFFF";
-  } else if (type === "sunnah") {
-    bg = theme.background;
-    border = theme.primary;
-    text = theme.primary;
-  }
+  const primaryBg = isDark ? "bg-app-primary-dark" : "bg-app-primary-light";
+  const primaryText = isDark ? "text-app-primary-dark" : "text-app-primary-light";
+  const extraBg = isDark ? "bg-app-border-dark" : "bg-app-border-light";
+  const extraText = isDark ? "text-app-text-dark" : "text-app-text-light";
 
   return (
     <View
-      style={{
-        backgroundColor: bg,
-        borderColor: border,
-        borderWidth: 1,
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 8
-      }}
+      className={
+        type === "fard"
+          ? `rounded-lg px-3 py-1.5 ${primaryBg}`
+          : type === "sunnah"
+          ? `rounded-lg border px-3 py-1.5 ${isDark ? "border-app-primary-dark" : "border-app-primary-light"}`
+          : `rounded-lg px-3 py-1.5 ${extraBg}`
+      }
     >
-      <ThemedText style={{ color: text, fontSize: 12, fontWeight: "600" }}>
+      <Text
+        numberOfLines={1}
+        className={
+          type === "fard"
+            ? "text-xs font-semibold text-white"
+            : type === "sunnah"
+            ? `text-xs font-semibold ${primaryText}`
+            : `text-xs font-semibold ${extraText}`
+        }
+      >
         {label}
-      </ThemedText>
+      </Text>
     </View>
   );
 }

@@ -29,6 +29,11 @@ export function NextPrayerDisplay({ prayer }: NextPrayerDisplayProps) {
   const rawScheme = useColorScheme();
   const colorScheme: ColorSchemeName = rawScheme === "dark" ? "dark" : "light";
   const theme = Colors[colorScheme];
+  const isDark = colorScheme === "dark";
+  const textClass = isDark ? "text-app-text-dark" : "text-app-text-light";
+  const mutedTextClass = isDark
+    ? "text-app-textMuted-dark"
+    : "text-app-textMuted-light";
   
   // Usar colores dinámicos en lugar de estáticos
   const { colors: prayerColors } = usePrayerTheme();
@@ -55,13 +60,10 @@ export function NextPrayerDisplay({ prayer }: NextPrayerDisplayProps) {
     <View className="w-full">
       <Card
         variant="elevated"
-        style={{
-          borderRadius: 32,
-          padding: 0,
-          overflow: "hidden",
-          borderWidth: 1,
-          borderColor: rawScheme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' // Sutil borde
-        }}
+        className={[
+          "rounded-[32px] overflow-hidden p-0 border",
+          rawScheme === "dark" ? "border-app-border-dark/60" : "border-app-border-light/60",
+        ].join(" ")}
       >
         {/* --- SECCIÓN SUPERIOR: INFO DEL REZO --- */}
         <View className="flex-row justify-between items-center px-6 pt-6 pb-4">
@@ -69,8 +71,7 @@ export function NextPrayerDisplay({ prayer }: NextPrayerDisplayProps) {
             <View className="flex-row items-center mb-1">
               <ThemedText
                 variant="small"
-                className="uppercase tracking-widest opacity-70 mr-2"
-                style={{ fontSize: 10, fontWeight: "600" }}
+                className={["uppercase tracking-widest opacity-70 mr-2 text-[10px] font-semibold", mutedTextClass].join(" ")}
               >
                 {t.nextPrayer}
               </ThemedText>
@@ -79,36 +80,23 @@ export function NextPrayerDisplay({ prayer }: NextPrayerDisplayProps) {
             </View>
 
             <ThemedText
-              variant="title"
-              className="capitalize"
               adjustsFontSizeToFit
               numberOfLines={1}
-              minimumFontScale={0.5}
-              style={{
-                fontSize: 36, // Más grande para mejor jerarquía
-                lineHeight: 42,
-                fontWeight: "800",
-                letterSpacing: -0.5,
-              }}
+              className={["capitalize text-[32px] leading-[50px] font-extrabold", textClass].join(" ")}
             >
               {t.prayers[prayer.name]}
             </ThemedText>
             
             <View className="flex-row items-center mt-2">
               <View 
-                style={{ 
-                  backgroundColor: accentColor + '20', 
-                  padding: 4, 
-                  borderRadius: 8, 
-                  marginRight: 8 
-                }}
+                className="mr-2 rounded-lg p-1"
+                style={{ backgroundColor: accentColor + "20" }}
               >
                 <Ionicons name="location-sharp" size={14} color={accentColor} />
               </View>
               <ThemedText
                 variant="default"
-                color={theme.textMuted}
-                style={{ fontWeight: "600", fontSize: 18 }}
+                className={["text-[18px] font-semibold", mutedTextClass].join(" ")}
               >
                 {formattedTime}
               </ThemedText>
@@ -117,59 +105,62 @@ export function NextPrayerDisplay({ prayer }: NextPrayerDisplayProps) {
 
           {/* Icono Decorativo grande y sutil en la esquina */}
           <View 
-            className="rounded-full items-center justify-center"
-            style={{
-              width: 64,
-              height: 64,
-              backgroundColor: accentColor + '10', // Muy sutil
-            }}
+            className="h-16 w-16 rounded-full items-center justify-center"
+            style={{ backgroundColor: accentColor + "10" }}
           >
              {/* Icono de luna/sol según el rezo podría ser una mejora futura */}
             <Ionicons name="moon" size={32} color={accentColor} />
           </View>
         </View>
 
-        {/* Separador Sutil */}
-        <View className="mx-6 h-[1px] opacity-5" style={{ backgroundColor: theme.text }} />
+          {/* Separador Sutil */}
+          <View className={["mx-6 h-px opacity-10", isDark ? "bg-app-text-dark" : "bg-app-text-light"].join(" ")} />
 
-        {/* --- SECCIÓN INFERIOR: CONTADOR --- */}
-        <View 
-          className="px-6 py-5 flex-row items-center justify-between"
-          style={{ backgroundColor: rawScheme === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}
-        >
-          <ThemedText 
-            variant="small"
-            className="font-medium opacity-60"
-          >
-            {t.timeRemaining}
-          </ThemedText>
-
-          <View className="flex-row items-baseline gap-1">
-            {/* Horas */}
+          {/* --- SECCIÓN INFERIOR: CONTADOR --- */}
+          <View className="px-6 py-5 flex-row items-center justify-between">
             <ThemedText 
-              adjustsFontSizeToFit
-              numberOfLines={1}
-              minimumFontScale={0.5}
-              style={{ fontSize: 28, fontWeight: "800", fontVariant: ["tabular-nums"], color: theme.text }}
+              variant="small"
+              className={["font-medium opacity-80", mutedTextClass].join(" ")}
             >
-              {formatDigit(timeLeft.hours)}
-              <ThemedText style={{ fontSize: 14, fontWeight: '500', color: theme.textMuted }}>h</ThemedText>
+              {t.timeRemaining}
             </ThemedText>
 
-            <ThemedText className="text-xl opacity-30 mx-1 mb-1">:</ThemedText>
+            <View className="flex-row items-baseline gap-1">
+              {/* Horas */}
+              <View className="flex-row items-baseline">
+                <ThemedText
+                  adjustsFontSizeToFit
+                  numberOfLines={1}
+                  minimumFontScale={0.5}
+                  className={["text-[28px] font-extrabold", textClass].join(" ")}
+                  style={{ fontVariant: ["tabular-nums"] }}
+                >
+                  {formatDigit(timeLeft.hours)}
+                </ThemedText>
+                <ThemedText className={["ml-0.5 text-[14px] font-medium opacity-80", mutedTextClass].join(" ")}>
+                  h
+                </ThemedText>
+              </View>
 
-            {/* Minutos */}
-            <ThemedText 
-              adjustsFontSizeToFit
-              numberOfLines={1}
-              minimumFontScale={0.5}
-              style={{ fontSize: 28, fontWeight: "800", fontVariant: ["tabular-nums"], color: theme.text }}
-            >
-              {formatDigit(timeLeft.minutes)}
-              <ThemedText style={{ fontSize: 14, fontWeight: '500', color: theme.textMuted }}>m</ThemedText>
-            </ThemedText>
+              <ThemedText className={["text-xl opacity-40 mx-1 mb-1", textClass].join(" ")}>:</ThemedText>
+
+              {/* Minutos */}
+              <View className="flex-row items-baseline">
+                <ThemedText
+                  adjustsFontSizeToFit
+                  numberOfLines={1}
+                  minimumFontScale={0.5}
+                  className={["text-[28px] font-extrabold", textClass].join(" ")}
+                  style={{ fontVariant: ["tabular-nums"] }}
+                >
+                  {formatDigit(timeLeft.minutes)}
+                </ThemedText>
+                <ThemedText className={["ml-0.5 text-[14px] font-medium opacity-80", mutedTextClass].join(" ")}>
+                  m
+                </ThemedText>
+              </View>
+            </View>
           </View>
-        </View>
       </Card>
     </View>
   );

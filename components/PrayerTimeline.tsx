@@ -3,16 +3,16 @@ import { View } from "react-native";
 
 import { Card, ThemedText } from "@/components/ui";
 import {
-    Colors,
-    type ColorSchemeName,
+  Colors,
+  type ColorSchemeName,
 } from "@/constants/theme";
 import { useLanguage } from "@/contexts/language-context";
 import { usePrayerTheme } from "@/contexts/prayer-theme-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import {
-    formatTime,
-    type DayPrayers,
-    type PrayerName,
+  formatTime,
+  type DayPrayers,
+  type PrayerName,
 } from "@/lib/prayer-times";
 
 interface PrayerTimelineProps {
@@ -41,6 +41,12 @@ export function PrayerTimeline({ prayers, nextPrayer }: PrayerTimelineProps) {
   const colorScheme: ColorSchemeName =
     rawScheme === "dark" ? "dark" : "light";
   const theme = Colors[colorScheme];
+  const isDark = colorScheme === "dark";
+  const textClass = isDark ? "text-app-text-dark" : "text-app-text-light";
+  const mutedTextClass = isDark
+    ? "text-app-textMuted-dark"
+    : "text-app-textMuted-light";
+  const primaryBgClass = isDark ? "bg-app-primary-dark" : "bg-app-primary-light";
   
   // Colores dinámicos
   const { colors: prayerColors } = usePrayerTheme();
@@ -111,30 +117,22 @@ export function PrayerTimeline({ prayers, nextPrayer }: PrayerTimelineProps) {
     <View className="w-full">
       <Card
         variant="outlined"
-        className="rounded-3xl px-4 py-4"
-        style={{
-           backgroundColor: theme.card, // Card already handles this but redundant is fine or removing it
-           borderColor: theme.border,
-        }}
+        className="rounded-3xl px-2 py-4"
       >
         <View className="relative">
           {/* --- BARRA DE FONDO --- */}
           <View
-            className="absolute left-0 right-0 h-1 rounded-full"
-            style={{
-              top: 6,
-              backgroundColor:
-                colorScheme === "dark" ? "#374151" : "#e5e7eb",
-            }}
+            className={[
+              "absolute left-0 right-0 top-[6px] h-1 rounded-full",
+              colorScheme === "dark" ? "bg-app-border-dark" : "bg-app-border-light",
+            ].join(" ")}
           />
 
           {/* --- BARRA DE PROGRESO (hasta el rezo actual) --- */}
           <View
-            className="absolute left-0 h-1 rounded-full"
+            className={["absolute left-0 top-[6px] h-1 rounded-full", primaryBgClass].join(" ")}
             style={{
-              top: 6,
               width: `${progressPos * 100}%`,
-              backgroundColor: theme.primary,
             }}
           />
 
@@ -162,43 +160,34 @@ export function PrayerTimeline({ prayers, nextPrayer }: PrayerTimelineProps) {
                 >
                   {/* Círculo exterior que se resalta cuando ya ha ocurrido */}
                   <View
-                    className="items-center justify-center rounded-full mb-2"
-                    style={{
-                      width: 18,
-                      height: 18,
-                      backgroundColor: theme.card,
-                      borderWidth: isCompleted ? 2 : 0,
-                      borderColor: isCompleted
-                        ? theme.primary
-                        : "transparent",
-                    }}
+                    className={[
+                      "mb-2 h-[18px] w-[18px] items-center justify-center rounded-full",
+                      isDark ? "bg-app-card-dark" : "bg-app-card-light",
+                      isCompleted
+                        ? isDark
+                          ? "border-2 border-app-primary-dark"
+                          : "border-2 border-app-primary-light"
+                        : "border-0 border-transparent",
+                    ].join(" ")}
                   >
                     {/* Punto de color del rezo */}
                     <View
-                      className="rounded-full"
-                      style={{
-                        width: 10,
-                        height: 10,
-                        backgroundColor: dotColor,
-                      }}
+                      className="h-[10px] w-[10px] rounded-full"
+                      style={{ backgroundColor: dotColor }}
                     />
                   </View>
 
                   {/* Etiquetas */}
-                  <View className="items-center gap-[1px] w-12">
+                  <View className="items-center gap-[1px] w-[52px]">
                     {/* Nombre del rezo (abreviado) */}
                     <ThemedText
                       variant="small"
-                      className="uppercase text-center w-full"
                       numberOfLines={1}
-                      adjustsFontSizeToFit
-                      minimumFontScale={0.7}
-                      style={{
-                        fontSize: 10,
-                        fontWeight: isNext ? "800" : "600",
-                        color: isNext ? theme.text : theme.textMuted,
-                        opacity: isNext ? 1 : 0.8,
-                      }}
+                      className={[
+                        "uppercase text-center w-full text-[10px]",
+                        isNext ? "font-bold opacity-100" : "font-medium opacity-80", // Uniform font weight
+                        isNext ? textClass : mutedTextClass,
+                      ].join(" ")}
                     >
                       {t.prayers[prayerName]}
                     </ThemedText>
@@ -206,15 +195,12 @@ export function PrayerTimeline({ prayers, nextPrayer }: PrayerTimelineProps) {
                     {/* Hora */}
                     <ThemedText
                       variant="small"
-                      className="text-center w-full"
                       numberOfLines={1}
-                      adjustsFontSizeToFit
-                      minimumFontScale={0.8}
-                      style={{
-                        fontSize: 11,
-                        fontWeight: isNext ? "700" : "400",
-                        color: isNext ? theme.text : theme.textMuted,
-                      }}
+                      className={[
+                        "text-center w-full text-[11px]",
+                        isNext ? "font-bold" : "font-medium", // Uniform font weight
+                        isNext ? textClass : mutedTextClass,
+                      ].join(" ")}
                     >
                       {formatTime(
                         prayerData.hour,

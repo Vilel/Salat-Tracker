@@ -1,8 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { Modal, Pressable, ScrollView, Switch, View } from "react-native";
+import { Modal, Pressable, ScrollView, View } from "react-native";
 
-import { Button, Card, ScreenLayout, ThemedText } from "@/components/ui";
+import { Button, Card, Divider, ScreenHeader, ScreenLayout, ThemedText, ToggleRow } from "@/components/ui";
 import { Colors, type ColorSchemeName } from "@/constants/theme";
 import { useLanguage } from "@/contexts/language-context";
 import {
@@ -37,6 +37,18 @@ export default function SettingsScreen() {
   const colorScheme: ColorSchemeName =
     rawScheme === "dark" ? "dark" : "light";
   const theme = Colors[colorScheme];
+  const isDark = colorScheme === "dark";
+
+  const mutedTextClass = isDark
+    ? "text-app-textMuted-dark"
+    : "text-app-textMuted-light";
+  const mutedSurfaceClass = isDark
+    ? "bg-app-border-dark/60"
+    : "bg-app-border-light/60";
+  const pressedRowClass = isDark
+    ? "active:bg-app-border-dark/40"
+    : "active:bg-app-border-light/40";
+  const sheetBgClass = isDark ? "bg-app-card-dark" : "bg-app-card-light";
 
   const { colors, updateColor, resetColors } = usePrayerTheme();
   const {
@@ -60,50 +72,35 @@ export default function SettingsScreen() {
   };
 
   return (
-    <ScreenLayout>
-      <View style={{ flex: 1, paddingBottom: 40 }}>
-        {/* Header */}
-        <View style={{ marginBottom: 24, marginTop: 8 }}>
-          <ThemedText variant="title" style={{ letterSpacing: -0.5 }}>
-            {t.settings.title}
-          </ThemedText>
-          <ThemedText variant="default" color={theme.textMuted} style={{ marginTop: 4 }}>
-            {t.settings.prayerColorsSubtitle}
-          </ThemedText>
-        </View>
+    <ScreenLayout contentContainerClassName="pb-10">
+      <ScreenHeader title={t.settings.title} subtitle={t.settings.subtitle} />
 
-        {/* Notifications Settings Card */}
-        <Card style={{ marginBottom: 24 }}>
-          <View style={{ marginBottom: 16 }}>
-            <ThemedText variant="subtitle" style={{ marginBottom: 4 }}>
+      {/* Notifications Settings Card */}
+      <View className="mb-6">
+        <Card>
+          <View className="mb-4">
+            <ThemedText variant="subtitle" className="mb-1">
               {t.settings.alarmsTitle}
             </ThemedText>
-            <ThemedText variant="small" color={theme.textMuted}>
+            <ThemedText variant="small" className={mutedTextClass}>
               {t.settings.alarmsSubtitle}
             </ThemedText>
           </View>
 
-          {!supported && (
-            <View
-              style={{
-                marginBottom: 16,
-                padding: 12,
-                borderRadius: 12,
-                backgroundColor: theme.border + "40",
-              }}
-            >
-              <ThemedText variant="small" color={theme.textMuted}>
+          {!supported ? (
+            <View className={["mb-4 rounded-xl p-3", mutedSurfaceClass].join(" ")}>
+              <ThemedText variant="small" className={mutedTextClass}>
                 {t.settings.alarmsRequiresDevBuild}
               </ThemedText>
             </View>
-          )}
+          ) : null}
 
-          <View style={{ marginBottom: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <View className="mb-4 flex-row items-center justify-between">
             <View>
-              <ThemedText variant="small" style={{ fontWeight: '600' }}>
+              <ThemedText variant="small" className="font-semibold">
                 {t.settings.alarmsPermissionLabel}
               </ThemedText>
-              <ThemedText variant="small" color={theme.textMuted}>
+              <ThemedText variant="small" className={mutedTextClass}>
                 {permissionStatus === "granted"
                   ? t.settings.alarmsPermissionGranted
                   : permissionStatus === "denied"
@@ -114,111 +111,71 @@ export default function SettingsScreen() {
               </ThemedText>
             </View>
 
-            {!canSchedule && supported && (
+            {!canSchedule && supported ? (
               <Button
                 size="sm"
                 variant="secondary"
                 label={t.settings.alarmsRequestPermission}
                 onPress={() => void requestPermission()}
               />
-            )}
+            ) : null}
           </View>
 
-          <View style={{ gap: 16 }}>
-            {PRAYERS.map((prayer) => (
-              <View
-                key={prayer}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  paddingVertical: 8,
-                  borderBottomColor: theme.border,
-                  borderBottomWidth: 0.5,
-                }}
-              >
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, marginRight: 8 }}>
-                  <Ionicons
-                    name={
-                      preferences[prayer]
-                        ? "notifications"
-                        : "notifications-off"
-                    }
-                    size={24}
-                    color={
-                      preferences[prayer] ? theme.primary : theme.textMuted
-                    }
-                  />
-                  <ThemedText
-                    variant="default"
-                    style={{ textTransform: 'capitalize', fontWeight: '500' }}
-                    numberOfLines={1}
-                    adjustsFontSizeToFit
-                    minimumFontScale={0.8}
-                  >
-                    {t.prayers[prayer]}
-                  </ThemedText>
-                </View>
-
-                <Switch
+          <View>
+            {PRAYERS.map((prayer, index) => (
+              <View key={prayer}>
+                <ToggleRow
+                  left={
+                    <Ionicons
+                      name={preferences[prayer] ? "notifications" : "notifications-off"}
+                      size={24}
+                      color={preferences[prayer] ? theme.primary : theme.textMuted}
+                    />
+                  }
+                  title={t.prayers[prayer]}
+                  description={t.settings.alarmsSubtitle}
                   value={preferences[prayer]}
                   onValueChange={() => toggleAlarm(prayer)}
                   disabled={!canSchedule}
-                  trackColor={{ false: theme.border, true: theme.primary }}
-                  thumbColor={"#fff"}
                 />
+
+                {index < PRAYERS.length - 1 ? (
+                  <Divider insetClassName="ml-9" />
+                ) : null}
               </View>
             ))}
           </View>
         </Card>
+      </View>
 
-        {/* Color Settings Card */}
-        <Card>
-          <View style={{ marginBottom: 16 }}>
-            <ThemedText variant="subtitle" style={{ marginBottom: 4 }}>
-              {t.settings.prayerColors}
-            </ThemedText>
-            <ThemedText variant="small" color={theme.textMuted}>
-              {t.settings.prayerColorsSubtitle}
-            </ThemedText>
-          </View>
+      {/* Color Settings Card */}
+      <Card>
+        <View className="mb-4">
+          <ThemedText variant="subtitle" className="mb-1">
+            {t.settings.prayerColors}
+          </ThemedText>
+          <ThemedText variant="small" className={mutedTextClass}>
+            {t.settings.prayerColorsSubtitle}
+          </ThemedText>
+        </View>
 
-          <View style={{ gap: 16 }}>
-            {PRAYERS.map((prayer) => (
+        <View>
+          {PRAYERS.map((prayer, index) => (
+            <View key={prayer}>
               <Pressable
-                key={prayer}
-                onPress={() =>
-                  setSelectedPrayer(prayer as keyof PrayerColors)
-                }
-                style={({ pressed }) => ({
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  paddingVertical: 8,
-                  borderBottomColor: theme.border,
-                  borderBottomWidth: 0.5,
-                  opacity: pressed ? 0.7 : 1
-                })}
+                onPress={() => setSelectedPrayer(prayer as keyof PrayerColors)}
+                accessibilityRole="button"
+                accessibilityLabel={t.prayers[prayer]}
+                className={["flex-row items-center py-3.5", pressedRowClass].join(" ")}
               >
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, marginRight: 8 }}>
-                  <View
-                    style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: 16,
-                      backgroundColor: colors[prayer as keyof PrayerColors],
-                    }}
-                  />
-                  <ThemedText
-                    variant="default"
-                    style={{ textTransform: 'capitalize', fontWeight: '500' }}
-                    numberOfLines={1}
-                    adjustsFontSizeToFit
-                    minimumFontScale={0.8}
-                  >
-                    {t.prayers[prayer]}
-                  </ThemedText>
-                </View>
+                <View
+                  className="mr-4 h-8 w-8 rounded-full"
+                  style={{ backgroundColor: colors[prayer as keyof PrayerColors] }}
+                />
+
+                <ThemedText className="flex-1 text-[16px] font-semibold">
+                  {t.prayers[prayer]}
+                </ThemedText>
 
                 <Ionicons
                   name="chevron-forward"
@@ -226,19 +183,23 @@ export default function SettingsScreen() {
                   color={theme.textMuted}
                 />
               </Pressable>
-            ))}
-          </View>
 
-          <View style={{ marginTop: 24 }}>
-            <Button
-              variant="outline"
-              label={t.settings.resetColors}
-              onPress={resetColors}
-              size="sm"
-            />
-          </View>
-        </Card>
-      </View>
+              {index < PRAYERS.length - 1 ? (
+                <Divider insetClassName="ml-12" />
+              ) : null}
+            </View>
+          ))}
+        </View>
+
+        <View className="mt-6">
+          <Button
+            variant="outline"
+            label={t.settings.resetColors}
+            onPress={resetColors}
+            size="sm"
+          />
+        </View>
+      </Card>
 
       {/* Modal Selection Color */}
       <Modal
@@ -248,30 +209,24 @@ export default function SettingsScreen() {
         onRequestClose={() => setSelectedPrayer(null)}
       >
         <Pressable
-          style={{
-            flex: 1,
-            justifyContent: 'flex-end',
-            backgroundColor: "rgba(0,0,0,0.5)"
-          }}
+          className="flex-1 justify-end bg-black/50"
           onPress={() => setSelectedPrayer(null)}
         >
           <Pressable
             onPress={(e) => e.stopPropagation()}
-            style={{
-              backgroundColor: theme.card,
-              borderTopLeftRadius: 32,
-              borderTopRightRadius: 32,
-              padding: 24,
-              paddingBottom: 40,
-            }}
+            className={["rounded-t-3xl p-6 pb-10", sheetBgClass].join(" ")}
           >
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-              <ThemedText variant="subtitle" style={{ textTransform: 'capitalize' }}>
-                {selectedPrayer
-                  ? t.prayers[selectedPrayer as PrayerName]
-                  : "Select Color"}
+            <View className="mb-6 flex-row items-center justify-between">
+              <ThemedText variant="subtitle" className="capitalize">
+                {selectedPrayer ? t.prayers[selectedPrayer as PrayerName] : ""}
               </ThemedText>
-              <Pressable onPress={() => setSelectedPrayer(null)}>
+              <Pressable
+                onPress={() => setSelectedPrayer(null)}
+                accessibilityRole="button"
+                accessibilityLabel={t.common.close}
+                hitSlop={10}
+                className="-m-1 p-1 active:opacity-70"
+              >
                 <Ionicons
                   name="close-circle"
                   size={28}
@@ -283,33 +238,24 @@ export default function SettingsScreen() {
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              style={{ marginBottom: 16 }}
+              className="mb-4"
             >
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16, justifyContent: 'center' }}>
+              <View className="flex-row flex-wrap justify-center gap-4">
                 {PRESET_COLORS.map((color) => (
                   <Pressable
                     key={color}
                     onPress={() => handleColorSelect(color)}
-                    style={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: 24,
-                      margin: 4,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: color,
-                      borderWidth:
-                        colors[selectedPrayer as keyof PrayerColors] ===
-                        color
-                          ? 3
-                          : 0,
-                      borderColor: theme.text,
-                    }}
+                    className={[
+                      "m-1 h-12 w-12 items-center justify-center rounded-full",
+                      colors[selectedPrayer as keyof PrayerColors] === color
+                        ? `border-[3px] ${isDark ? "border-app-text-dark" : "border-app-text-light"}`
+                        : "border-0",
+                    ].join(" ")}
+                    style={{ backgroundColor: color }}
                   >
-                    {colors[selectedPrayer as keyof PrayerColors] ===
-                      color && (
+                    {colors[selectedPrayer as keyof PrayerColors] === color ? (
                       <Ionicons name="checkmark" size={24} color="#fff" />
-                    )}
+                    ) : null}
                   </Pressable>
                 ))}
               </View>

@@ -37,6 +37,19 @@ export function LocationSelector({
   const colorScheme: ColorSchemeName =
     rawScheme === "dark" ? "dark" : "light";
   const theme = Colors[colorScheme];
+  const isDark = colorScheme === "dark";
+
+  const containerBgClass = isDark ? "bg-app-card-dark" : "bg-app-card-light";
+  const borderClass = isDark ? "border-app-border-dark" : "border-app-border-light";
+  const mutedTextClass = isDark
+    ? "text-app-textMuted-dark"
+    : "text-app-textMuted-light";
+  const textClass = isDark ? "text-app-text-dark" : "text-app-text-light";
+  const primaryTextClass = isDark ? "text-app-primary-dark" : "text-app-primary-light";
+  const pressedRowClass = isDark
+    ? "active:bg-app-border-dark/40"
+    : "active:bg-app-border-light/40";
+  const selectedRowClass = isDark ? "bg-app-primary-dark/10" : "bg-app-primary-light/10";
 
   // Texto corto para el botón (similar a ES/EN del selector de idioma)
   const shortLabel =
@@ -63,38 +76,34 @@ export function LocationSelector({
       {/* --- BOTÓN PRINCIPAL (mismo patrón que LanguageSelector) --- */}
       <Pressable
         onPress={() => setOpen(true)}
-        className="flex-row items-center rounded-full border px-4 py-2"
-        style={({ pressed }) => ({
-          backgroundColor: theme.card,
-          borderColor: theme.border,
-          opacity: pressed ? 0.7 : 1,
-          transform: [{ scale: pressed ? 0.98 : 1 }],
-        })}
+        className={[
+          "flex-row items-center rounded-full border px-4 py-2 active:opacity-70 active:scale-95",
+          containerBgClass,
+          borderClass,
+        ].join(" ")}
       >
         <Ionicons
           name={iconName}
           size={16}
           color={theme.primary}
-          style={{ marginRight: 8 }}
         />
+        <View className="w-2" />
 
         <ThemedText
           variant="small"
-          className="font-semibold mr-2 flex-shrink"
+          className="mr-2 flex-shrink font-semibold"
           numberOfLines={1}
-          style={{
-            fontWeight: "600",
-          }}
         >
           {shortLabel}
         </ThemedText>
 
-        <Ionicons
-          name="chevron-down"
-          size={14}
-          color={theme.textMuted}
-          style={{ marginTop: 1 }}
-        />
+        <View className="mt-[1px]">
+          <Ionicons
+            name="chevron-down"
+            size={14}
+            color={theme.textMuted}
+          />
+        </View>
       </Pressable>
 
       {/* --- MODAL DE SELECCIÓN --- */}
@@ -106,8 +115,7 @@ export function LocationSelector({
       >
         {/* Backdrop: cierra al pulsar fuera */}
         <Pressable
-          className="flex-1 justify-center items-center"
-          style={{ backgroundColor: "rgba(0,0,0,0.4)" }}
+          className="flex-1 items-center justify-center bg-black/40"
           onPress={() => setOpen(false)}
         >
           {/* Tarjeta central (evita cerrar al tocar dentro) */}
@@ -115,20 +123,17 @@ export function LocationSelector({
             <Card
               variant="elevated"
               className="w-[320px] rounded-3xl overflow-hidden p-0"
-              style={{ padding: 0 }} // Override default Card padding
             >
               {/* Header */}
               <View
-                className="px-5 py-4 border-b"
-                style={{ borderBottomColor: theme.border }}
+                className={["px-5 py-4 border-b", borderClass].join(" ")}
               >
                 <ThemedText variant="default" className="font-bold text-center">
                   {t.location.using ?? "Location"}
                 </ThemedText>
                 <ThemedText
                   variant="small"
-                  className="text-center mt-1"
-                  color={theme.textMuted}
+                  className={["text-center mt-1", mutedTextClass].join(" ")}
                 >
                   Choose how to detect your prayer location
                 </ThemedText>
@@ -139,19 +144,16 @@ export function LocationSelector({
                 {/* Ubicación automática (GPS) */}
                 <Pressable
                   onPress={() => handleSelect("auto")}
-                  className="flex-row items-center px-5 py-3 mx-2 rounded-2xl mb-1"
-                  style={({ pressed }) => ({
-                    backgroundColor:
-                      mode === "auto"
-                        ? theme.primary + "15"
-                        : pressed
-                        ? theme.background
-                        : "transparent",
-                  })}
+                  className={[
+                    "mx-2 mb-1 flex-row items-center rounded-2xl px-5 py-3",
+                    mode === "auto" ? selectedRowClass : pressedRowClass,
+                  ].join(" ")}
                 >
                   <View
-                    className="w-9 h-9 rounded-full items-center justify-center mr-3"
-                    style={{ backgroundColor: theme.primary + "22" }}
+                    className={[
+                      "h-9 w-9 items-center justify-center rounded-full mr-3",
+                      isDark ? "bg-app-primary-dark/15" : "bg-app-primary-light/10",
+                    ].join(" ")}
                   >
                     <Ionicons
                       name="navigate"
@@ -163,17 +165,16 @@ export function LocationSelector({
                   <View className="flex-1">
                     <ThemedText
                       variant="small"
-                      className="font-semibold"
-                      style={{
-                        color: mode === "auto" ? theme.primary : theme.text,
-                      }}
+                      className={[
+                        "font-semibold",
+                        mode === "auto" ? primaryTextClass : textClass,
+                      ].join(" ")}
                     >
                       {t.location.using ?? "Current location"}
                     </ThemedText>
                     <ThemedText
                       variant="small"
-                      color={theme.textMuted}
-                      style={{ fontSize: 11, marginTop: 2 }}
+                      className={["mt-0.5 text-[11px]", mutedTextClass].join(" ")}
                     >
                       Use GPS to detect your city
                     </ThemedText>
@@ -191,19 +192,16 @@ export function LocationSelector({
                 {/* Ubicación predeterminada (Makkah) */}
                 <Pressable
                   onPress={() => handleSelect("default")}
-                  className="flex-row items-center px-5 py-3 mx-2 rounded-2xl mb-1"
-                  style={({ pressed }) => ({
-                    backgroundColor:
-                      mode === "default"
-                        ? theme.primary + "15"
-                        : pressed
-                        ? theme.background
-                        : "transparent",
-                  })}
+                  className={[
+                    "mx-2 mb-1 flex-row items-center rounded-2xl px-5 py-3",
+                    mode === "default" ? selectedRowClass : pressedRowClass,
+                  ].join(" ")}
                 >
                   <View
-                    className="w-9 h-9 rounded-full items-center justify-center mr-3"
-                    style={{ backgroundColor: theme.primary + "22" }}
+                    className={[
+                      "h-9 w-9 items-center justify-center rounded-full mr-3",
+                      isDark ? "bg-app-primary-dark/15" : "bg-app-primary-light/10",
+                    ].join(" ")}
                   >
                     <Ionicons
                       name="location"
@@ -215,17 +213,16 @@ export function LocationSelector({
                   <View className="flex-1">
                     <ThemedText
                       variant="small"
-                      className="font-semibold"
-                      style={{
-                        color: mode === "default" ? theme.primary : theme.text,
-                      }}
+                      className={[
+                        "font-semibold",
+                        mode === "default" ? primaryTextClass : textClass,
+                      ].join(" ")}
                     >
                       {t.location.default ?? "Default location"}
                     </ThemedText>
                     <ThemedText
                       variant="small"
-                      color={theme.textMuted}
-                      style={{ fontSize: 11, marginTop: 2 }}
+                      className={["mt-0.5 text-[11px]", mutedTextClass].join(" ")}
                     >
                       Makkah, Saudi Arabia
                     </ThemedText>

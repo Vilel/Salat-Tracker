@@ -6,7 +6,7 @@ import { LanguageSelector } from "@/components/LanguageSelector";
 import { LocationSelector } from "@/components/LocationSelector";
 import { NextPrayerDisplay } from "@/components/NextPrayerDisplay";
 import { PrayerTimeline } from "@/components/PrayerTimeline";
-import { Button, ScreenLayout, ThemedText } from "@/components/ui";
+import { Button, ScreenHeader, ScreenLayout, ThemedText } from "@/components/ui";
 import { Colors, type ColorSchemeName } from "@/constants/theme";
 import { useLanguage } from "@/contexts/language-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
@@ -43,12 +43,11 @@ export default function HomeScreen() {
   if (loadingState === "loading") {
     return (
       <ScreenLayout scrollable={false}>
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 32 }}>
+        <View className="flex-1 items-center justify-center px-8">
           <ActivityIndicator size="large" color={theme.primary} />
           <ThemedText
             variant="subtitle"
-            color={theme.textMuted}
-            style={{ marginTop: 16, textAlign: "center", fontSize: 18 }}
+            className={`${colorScheme === "dark" ? "text-app-textMuted-dark" : "text-app-textMuted-light"} mt-4 text-center`}
           >
             {t.loading}
           </ThemedText>
@@ -60,12 +59,11 @@ export default function HomeScreen() {
   if (loadingState === "error") {
     return (
       <ScreenLayout scrollable={false}>
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 32 }}>
-          <ThemedText style={{ fontSize: 56, marginBottom: 12 }}>⚠️</ThemedText>
+        <View className="flex-1 items-center justify-center px-8">
+          <ThemedText className="mb-3 text-[56px]">⚠️</ThemedText>
           <ThemedText
             variant="subtitle"
-            color={theme.text}
-            style={{ textAlign: "center", marginBottom: 24 }}
+            className="mb-6 text-center"
           >
             {errorMessage}
           </ThemedText>
@@ -75,7 +73,7 @@ export default function HomeScreen() {
             onPress={retry}
             variant="primary"
             size="lg"
-            style={{ minWidth: 160 }}
+            className="min-w-[160px]"
           />
         </View>
       </ScreenLayout>
@@ -90,9 +88,9 @@ export default function HomeScreen() {
 
   return (
     <ScreenLayout>
-      <View style={{ flex: 1, gap: 24, paddingBottom: 24 }}>
+      <View className="flex-1 gap-6 pb-6">
         {/* Header: selector de ubicación + selector de idioma */}
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+        <View className="flex-row items-center justify-between gap-2">
           <LocationSelector
             mode={locationMode}
             city={location?.city}

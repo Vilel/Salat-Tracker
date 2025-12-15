@@ -31,6 +31,15 @@ export function LanguageSelector() {
   const colorScheme: ColorSchemeName =
     rawScheme === "dark" ? "dark" : "light";
   const theme = Colors[colorScheme];
+  const isDark = colorScheme === "dark";
+
+  const containerBgClass = isDark ? "bg-app-card-dark" : "bg-app-card-light";
+  const borderClass = isDark ? "border-app-border-dark" : "border-app-border-light";
+  const primaryTextClass = isDark ? "text-app-primary-dark" : "text-app-primary-light";
+  const pressedRowClass = isDark
+    ? "active:bg-app-border-dark/40"
+    : "active:bg-app-border-light/40";
+  const selectedRowClass = isDark ? "bg-app-primary-dark/10" : "bg-app-primary-light/10";
 
   const current = LOCALES.find((l) => l.code === locale) ?? LOCALES[0];
 
@@ -50,30 +59,28 @@ export function LanguageSelector() {
       {/* --- BOTÓN ACTIVADOR --- */}
       <Pressable
         onPress={() => setOpen(true)}
-        className="flex-row items-center rounded-full border px-4 py-2"
-        style={({ pressed }) => ({
-          backgroundColor: theme.card,
-          borderColor: theme.border,
-          opacity: pressed ? 0.7 : 1,
-          transform: [{ scale: pressed ? 0.98 : 1 }],
-        })}
+        className={[
+          "flex-row items-center rounded-full border px-4 py-2 active:opacity-70 active:scale-95",
+          containerBgClass,
+          borderClass,
+        ].join(" ")}
       >
-        <Text style={{ fontSize: 18, marginRight: 8 }}>{current.flag}</Text>
+        <Text className="mr-2 text-[18px]">{current.flag}</Text>
 
         <ThemedText
           variant="small"
-          className="font-semibold mr-2"
-          style={{ fontWeight: "600" }}
+          className="mr-2 font-semibold"
         >
           {current.code.toUpperCase()}
         </ThemedText>
 
-        <Ionicons
-          name="chevron-down"
-          size={14}
-          color={theme.textMuted}
-          style={{ marginTop: 1 }}
-        />
+        <View className="mt-[1px]">
+          <Ionicons
+            name="chevron-down"
+            size={14}
+            color={theme.textMuted}
+          />
+        </View>
       </Pressable>
 
       {/* --- MODAL DE SELECCIÓN --- */}
@@ -85,8 +92,7 @@ export function LanguageSelector() {
       >
         {/* Backdrop */}
         <Pressable
-          className="flex-1 justify-center items-center"
-          style={{ backgroundColor: "rgba(0,0,0,0.4)" }}
+          className="flex-1 items-center justify-center bg-black/40"
           onPress={() => setOpen(false)}
         >
           {/* Contenido del modal */}
@@ -94,12 +100,10 @@ export function LanguageSelector() {
             <Card
               variant="elevated"
               className="w-[280px] rounded-3xl overflow-hidden p-0"
-              style={{ padding: 0 }}
             >
               {/* Header del modal */}
               <View
-                className="px-5 py-4 border-b"
-                style={{ borderBottomColor: theme.border }}
+                className={["px-5 py-4 border-b", borderClass].join(" ")}
               >
                 <ThemedText variant="default" className="font-bold text-center">
                   {t.settings.language}
@@ -114,24 +118,22 @@ export function LanguageSelector() {
                     <Pressable
                       key={l.code}
                       onPress={() => handleSelect(l.code)}
-                      className="flex-row items-center px-5 py-3 mx-2 rounded-xl mb-1"
-                      style={({ pressed }) => ({
-                        backgroundColor: isActive
-                          ? theme.primary + "22" // leve resaltado
-                          : pressed
-                          ? theme.background
-                          : "transparent",
-                      })}
+                      className={[
+                        "mx-2 mb-1 flex-row items-center rounded-xl px-5 py-3",
+                        isActive ? selectedRowClass : pressedRowClass,
+                      ].join(" ")}
                     >
-                      <Text style={{ fontSize: 24, marginRight: 16 }}>
+                      <Text className="mr-4 text-[24px]">
                         {l.flag}
                       </Text>
 
                       <View className="flex-1">
                         <ThemedText
                           variant="default"
-                          className="font-medium"
-                          color={isActive ? theme.primary : theme.text}
+                          className={[
+                            "font-medium",
+                            isActive ? primaryTextClass : "",
+                          ].join(" ")}
                         >
                           {t.languages[l.code]}
                         </ThemedText>
