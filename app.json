@@ -63,6 +63,19 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "115295b3-83c1-4442-bf43-b7b2d9541bd4"
+      }
+    },
+    "owner": "vei",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/115295b3-83c1-4442-bf43-b7b2d9541bd4"
     }
   }
 }

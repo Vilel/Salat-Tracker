@@ -9,6 +9,7 @@ import {
 } from "react-native";
 
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useIsRTL } from "@/hooks/use-is-rtl";
 
 import { ThemedText } from "./ThemedText";
 
@@ -38,10 +39,14 @@ export function ListRow({
 }: ListRowProps) {
   const colorScheme = useColorScheme() ?? "light";
   const isDark = colorScheme === "dark";
+  const isRTL = useIsRTL();
 
   const hasDescription = !!description;
 
   const alignClass = hasDescription ? "items-start" : "items-center";
+  const rowDirClass = isRTL ? "flex-row-reverse" : "flex-row";
+  const leftSpacingClass = isRTL ? "ml-4" : "mr-4";
+  const rightSpacingClass = isRTL ? "mr-3" : "ml-3";
   const pressedBg = isDark
     ? "active:bg-app-border-dark/40"
     : "active:bg-app-border-light/40";
@@ -56,7 +61,8 @@ export function ListRow({
     <Pressable
       accessibilityRole="button"
       className={[
-        "self-stretch w-full flex-row flex-nowrap rounded-xl px-3 py-3",
+        "self-stretch w-full flex-nowrap rounded-xl px-3 py-3",
+        rowDirClass,
         alignClass,
         tone === "selected" ? selectedBg : pressedBg,
         className,
@@ -67,11 +73,12 @@ export function ListRow({
       {...rest}
     >
       {/* LEFT + TEXT */}
-      <View className={["flex-1 min-w-0 flex-row", alignClass].join(" ")}>
+      <View className={["flex-1 min-w-0", rowDirClass, alignClass].join(" ")}>
         {left ? (
           <View
             className={[
-              "shrink-0 mr-4",
+              "shrink-0",
+              leftSpacingClass,
               hasDescription ? "mt-0.5" : "",
             ].filter(Boolean).join(" ")}
           >
@@ -85,6 +92,7 @@ export function ListRow({
             className={["font-semibold", titleClassName].filter(Boolean).join(" ")}
             style={titleStyle}
             numberOfLines={1}
+            align={isRTL ? "right" : "left"}
           >
             {title}
           </ThemedText>
@@ -94,6 +102,7 @@ export function ListRow({
               variant="small"
               numberOfLines={1}
               className={["mt-0.5", mutedTextClass].join(" ")}
+              align={isRTL ? "right" : "left"}
             >
               {description}
             </ThemedText>
@@ -104,7 +113,9 @@ export function ListRow({
       {/* RIGHT */}
       {right ? (
         <View className={[
-          "ml-3 shrink-0 flex-row justify-end",
+          "shrink-0 justify-end",
+          rightSpacingClass,
+          rowDirClass,
           alignClass,
           hasDescription ? "mt-0.5" : "",
         ].filter(Boolean).join(" ")}>

@@ -1,6 +1,7 @@
 // contexts/language-context.tsx
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Updates from "expo-updates";
 import * as Localization from "expo-localization";
 import {
     createContext,
@@ -9,6 +10,7 @@ import {
     useState,
     type ReactNode,
 } from "react";
+import { Alert, DevSettings, I18nManager } from "react-native";
 
 import {
     LOCALE_STORAGE_KEY,
@@ -41,6 +43,10 @@ function getSystemLocale(): Locale {
   return "en";
 }
 
+function isRtlLocale(locale: Locale): boolean {
+  return locale === "ar";
+}
+
 export function LanguageProvider({ children }: { children: ReactNode }) {
   // Idioma inicial = idioma del sistema (o "en" si no coincide)
   const [locale, setLocaleState] = useState<Locale>(getSystemLocale);
@@ -54,11 +60,21 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     try {
       const saved = await AsyncStorage.getItem(LOCALE_STORAGE_KEY);
 
+      let resolvedLocale = locale;
       if (saved && TRANSLATIONS[saved as Locale]) {
         // Si el usuario ya eligió un idioma antes, priorizamos ese
-        setLocaleState(saved as Locale);
+        resolvedLocale = saved as Locale;
       }
       // Si no hay nada guardado, dejamos el idioma del sistema tal cual
+
+      // Apply RTL on startup before rendering UI (no alert on cold start).
+      const shouldBeRtl = isRtlLocale(resolvedLocale);
+      if (I18nManager.isRTL !== shouldBeRtl) {
+        I18nManager.allowRTL(true);
+        I18nManager.forceRTL(shouldBeRtl);
+      }
+
+      setLocaleState(resolvedLocale);
     } catch (error) {
       console.warn("Failed to load saved locale:", error);
     } finally {
@@ -67,11 +83,36 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   };
 
   const setLocale = async (newLocale: Locale): Promise<void> => {
+    const shouldSwitchRtl = I18nManager.isRTL !== isRtlLocale(newLocale);
     setLocaleState(newLocale);
     try {
       await AsyncStorage.setItem(LOCALE_STORAGE_KEY, newLocale);
     } catch (error) {
       console.warn("Failed to save locale:", error);
+    }
+
+    if (shouldSwitchRtl) {
+      I18nManager.allowRTL(true);
+      I18nManager.forceRTL(isRtlLocale(newLocale));
+
+      if (__DEV__) {
+        DevSettings.reload();
+      } else {
+        try {
+          if (Updates.isEnabled) {
+            await Updates.reloadAsync();
+            return;
+          }
+        } catch (error) {
+          console.warn("Failed to reload after RTL switch:", error);
+        }
+
+        Alert.alert(
+          TRANSLATIONS[newLocale].settings.restartRequiredTitle,
+          TRANSLATIONS[newLocale].settings.restartRequiredMessage,
+          [{ text: TRANSLATIONS[newLocale].common.close }]
+        );
+      }
     }
   };
 

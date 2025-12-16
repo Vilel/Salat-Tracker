@@ -15,6 +15,7 @@ import {
 } from "@/constants/theme";
 import { useLanguage } from "@/contexts/language-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useIsRTL } from "@/hooks/use-is-rtl";
 import { toLocaleTag } from "@/lib/locale";
 import type { PrayerName } from "@/lib/prayer-times";
 
@@ -47,6 +48,7 @@ function formatDateLabel(dateKey: string, localeTag: string = "en-US") {
 
 export default function QadaScreen() {
   const { t, locale } = useLanguage();
+  const isRTL = useIsRTL();
   const rawScheme = useColorScheme();
   const colorScheme: ColorSchemeName =
     rawScheme === "dark" ? "dark" : "light";
@@ -256,7 +258,7 @@ export default function QadaScreen() {
                       </Pressable>
 
                       {index < PRAYER_ORDER.length - 1 ? (
-                        <Divider insetClassName="ml-[68px]" />
+                        <Divider insetClassName={isRTL ? "mr-[68px]" : "ml-[68px]"} />
                       ) : null}
                     </View>
                   );

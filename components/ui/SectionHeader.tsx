@@ -1,6 +1,7 @@
 import { View, type ViewProps } from "react-native";
 
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useIsRTL } from "@/hooks/use-is-rtl";
 
 import { ThemedText } from "./ThemedText";
 
@@ -21,20 +22,28 @@ export function SectionHeader({
 }: SectionHeaderProps) {
   const colorScheme = useColorScheme() ?? "light";
   const isDark = colorScheme === "dark";
+  const isRTL = useIsRTL();
   const mutedClass = isDark ? "text-app-textMuted-dark" : "text-app-textMuted-light";
 
   return (
     <View
-      className={["flex-row items-start justify-between gap-3", className].filter(Boolean).join(" ")}
+      className={[
+        "items-start justify-between gap-3",
+        isRTL ? "flex-row-reverse" : "flex-row",
+        className,
+      ].filter(Boolean).join(" ")}
       style={style}
       {...rest}
     >
       <View className="flex-1">
-        <ThemedText variant="subtitle">{title}</ThemedText>
+        <ThemedText variant="subtitle" align={isRTL ? "right" : "left"}>
+          {title}
+        </ThemedText>
         {subtitle ? (
           <ThemedText
             variant="small"
             className={["mt-1", mutedClass].join(" ")}
+            align={isRTL ? "right" : "left"}
           >
             {subtitle}
           </ThemedText>

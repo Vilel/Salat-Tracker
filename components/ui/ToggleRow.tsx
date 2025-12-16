@@ -3,6 +3,7 @@ import { Switch, View, type SwitchProps, type ViewProps } from "react-native";
 
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useIsRTL } from "@/hooks/use-is-rtl";
 
 import { ThemedText } from "./ThemedText";
 
@@ -30,6 +31,7 @@ export function ToggleRow({
   const colorScheme = useColorScheme() ?? "light";
   const theme = Colors[colorScheme === "dark" ? "dark" : "light"];
   const isDark = colorScheme === "dark";
+  const isRTL = useIsRTL();
   const mutedTextClass = isDark
     ? "text-app-textMuted-dark"
     : "text-app-textMuted-light";
@@ -37,7 +39,8 @@ export function ToggleRow({
   return (
     <View
       className={[
-        "flex-row items-center justify-between py-2.5",
+        "items-center justify-between py-2.5",
+        isRTL ? "flex-row-reverse" : "flex-row",
         className,
       ].filter(Boolean).join(" ")}
       style={style}
@@ -47,7 +50,10 @@ export function ToggleRow({
       {...rest}
     >
       <View
-        className="flex-1 min-w-0 flex-row items-center gap-3 mr-2.5"
+        className={[
+          "flex-1 min-w-0 items-center gap-3",
+          isRTL ? "flex-row-reverse ml-2.5" : "flex-row mr-2.5",
+        ].join(" ")}
       >
         {left ? <View className="shrink-0">{left}</View> : null}
 
@@ -56,11 +62,17 @@ export function ToggleRow({
             variant="default"
             className="font-semibold"
             numberOfLines={1}
+            align={isRTL ? "right" : "left"}
           >
             {title}
           </ThemedText>
           {description ? (
-            <ThemedText variant="small" className={mutedTextClass} numberOfLines={1}>
+            <ThemedText
+              variant="small"
+              className={mutedTextClass}
+              numberOfLines={1}
+              align={isRTL ? "right" : "left"}
+            >
               {description}
             </ThemedText>
           ) : null}

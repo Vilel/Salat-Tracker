@@ -14,6 +14,7 @@ import {
 } from "@/constants/theme";
 import { useLanguage } from "@/contexts/language-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useIsRTL } from "@/hooks/use-is-rtl";
 
 export type LocationMode = "auto" | "default";
 
@@ -32,6 +33,7 @@ export function LocationSelector({
 }: LocationSelectorProps) {
   const { t } = useLanguage();
   const [open, setOpen] = useState(false);
+  const isRTL = useIsRTL();
 
   const rawScheme = useColorScheme();
   const colorScheme: ColorSchemeName =
@@ -55,8 +57,8 @@ export function LocationSelector({
   const shortLabel =
     city ??
     (mode === "default"
-      ? "Makkah"
-      : t.location.using ?? "GPS");
+      ? t.location.defaultShort
+      : t.location.gpsShort);
 
   const handleSelect = (newMode: LocationMode) => {
     setOpen(false);
@@ -77,7 +79,8 @@ export function LocationSelector({
       <Pressable
         onPress={() => setOpen(true)}
         className={[
-          "flex-row items-center rounded-full border px-4 py-2 active:opacity-70 active:scale-95",
+          "items-center rounded-full border px-4 py-2 active:opacity-70 active:scale-95",
+          isRTL ? "flex-row-reverse" : "flex-row",
           containerBgClass,
           borderClass,
         ].join(" ")}
@@ -91,8 +94,9 @@ export function LocationSelector({
 
         <ThemedText
           variant="small"
-          className="mr-2 flex-shrink font-semibold"
+          className={[isRTL ? "ml-2" : "mr-2", "flex-shrink font-semibold"].join(" ")}
           numberOfLines={1}
+          align={isRTL ? "right" : "left"}
         >
           {shortLabel}
         </ThemedText>
@@ -129,13 +133,13 @@ export function LocationSelector({
                 className={["px-5 py-4 border-b", borderClass].join(" ")}
               >
                 <ThemedText variant="default" className="font-bold text-center">
-                  {t.location.using ?? "Location"}
+                  {t.location.chooserTitle}
                 </ThemedText>
                 <ThemedText
                   variant="small"
                   className={["text-center mt-1", mutedTextClass].join(" ")}
                 >
-                  Choose how to detect your prayer location
+                  {t.location.chooserSubtitle}
                 </ThemedText>
               </View>
 
@@ -145,13 +149,15 @@ export function LocationSelector({
                 <Pressable
                   onPress={() => handleSelect("auto")}
                   className={[
-                    "mx-2 mb-1 flex-row items-center rounded-2xl px-5 py-3",
+                    "mx-2 mb-1 items-center rounded-2xl px-5 py-3",
+                    isRTL ? "flex-row-reverse" : "flex-row",
                     mode === "auto" ? selectedRowClass : pressedRowClass,
                   ].join(" ")}
                 >
                   <View
                     className={[
-                      "h-9 w-9 items-center justify-center rounded-full mr-3",
+                      "h-9 w-9 items-center justify-center rounded-full",
+                      isRTL ? "ml-3" : "mr-3",
                       isDark ? "bg-app-primary-dark/15" : "bg-app-primary-light/10",
                     ].join(" ")}
                   >
@@ -169,14 +175,16 @@ export function LocationSelector({
                         "font-semibold",
                         mode === "auto" ? primaryTextClass : textClass,
                       ].join(" ")}
+                      align={isRTL ? "right" : "left"}
                     >
-                      {t.location.using ?? "Current location"}
+                      {t.location.using}
                     </ThemedText>
                     <ThemedText
                       variant="small"
                       className={["mt-0.5 text-[11px]", mutedTextClass].join(" ")}
+                      align={isRTL ? "right" : "left"}
                     >
-                      Use GPS to detect your city
+                      {t.location.autoSubtitle}
                     </ThemedText>
                   </View>
 
@@ -193,13 +201,15 @@ export function LocationSelector({
                 <Pressable
                   onPress={() => handleSelect("default")}
                   className={[
-                    "mx-2 mb-1 flex-row items-center rounded-2xl px-5 py-3",
+                    "mx-2 mb-1 items-center rounded-2xl px-5 py-3",
+                    isRTL ? "flex-row-reverse" : "flex-row",
                     mode === "default" ? selectedRowClass : pressedRowClass,
                   ].join(" ")}
                 >
                   <View
                     className={[
-                      "h-9 w-9 items-center justify-center rounded-full mr-3",
+                      "h-9 w-9 items-center justify-center rounded-full",
+                      isRTL ? "ml-3" : "mr-3",
                       isDark ? "bg-app-primary-dark/15" : "bg-app-primary-light/10",
                     ].join(" ")}
                   >
@@ -217,14 +227,16 @@ export function LocationSelector({
                         "font-semibold",
                         mode === "default" ? primaryTextClass : textClass,
                       ].join(" ")}
+                      align={isRTL ? "right" : "left"}
                     >
-                      {t.location.default ?? "Default location"}
+                      {t.location.default}
                     </ThemedText>
                     <ThemedText
                       variant="small"
                       className={["mt-0.5 text-[11px]", mutedTextClass].join(" ")}
+                      align={isRTL ? "right" : "left"}
                     >
-                      Makkah, Saudi Arabia
+                      {t.location.defaultSubtitle}
                     </ThemedText>
                   </View>
 

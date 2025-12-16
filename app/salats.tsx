@@ -16,6 +16,7 @@ import {
 } from "@/constants/theme";
 import { useLanguage } from "@/contexts/language-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useIsRTL } from "@/hooks/use-is-rtl";
 import { toLocaleTag } from "@/lib/locale";
 import type { PrayerName } from "@/lib/prayer-times";
 
@@ -47,6 +48,7 @@ function getDayLabel(dateString: string, localeTag: string): string {
 
 export default function SalatsScreen() {
   const { t, locale } = useLanguage();
+  const isRTL = useIsRTL();
   const rawScheme = useColorScheme();
   const colorScheme: ColorSchemeName =
     rawScheme === "dark" ? "dark" : "light";
@@ -256,9 +258,9 @@ export default function SalatsScreen() {
                       {/* CHECKBOX */}
                       <View
                         className={
-                          done
-                            ? `mr-4 h-8 w-8 items-center justify-center rounded-full ${primaryBgClass}`
-                            : `mr-4 h-8 w-8 items-center justify-center rounded-full border-2 ${borderColorClass}`
+                        done
+                            ? `${isRTL ? "ml-4" : "mr-4"} h-8 w-8 items-center justify-center rounded-full ${primaryBgClass}`
+                            : `${isRTL ? "ml-4" : "mr-4"} h-8 w-8 items-center justify-center rounded-full border-2 ${borderColorClass}`
                         }
                       >
                         {done ? <Ionicons name="checkmark" size={18} color="#fff" /> : null}
@@ -286,7 +288,7 @@ export default function SalatsScreen() {
                     </Pressable>
 
                     {index < PRAYER_ORDER.length - 1 ? (
-                      <Divider insetClassName="ml-16" />
+                      <Divider insetClassName={isRTL ? "mr-16" : "ml-16"} />
                     ) : null}
                   </View>
                 );

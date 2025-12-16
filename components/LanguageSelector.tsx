@@ -15,17 +15,22 @@ import type { Locale } from "@/constants/i18n";
 import { Colors, type ColorSchemeName } from "@/constants/theme";
 import { useLanguage } from "@/contexts/language-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useIsRTL } from "@/hooks/use-is-rtl";
 
-const LOCALES: { code: Locale; flag: string; label: string }[] = [
-  { code: "es", flag: "🇪🇸", label: "Español" },
-  { code: "en", flag: "🇬🇧", label: "English" },
-  { code: "fr", flag: "🇫🇷", label: "Français" },
-  { code: "nl", flag: "🇳🇱", label: "Nederlands" },
+const LOCALES: { code: Locale; flag: string }[] = [
+  { code: "es", flag: "🇪🇸" },
+  { code: "en", flag: "🇬🇧" },
+  { code: "fr", flag: "🇫🇷" },
+  { code: "nl", flag: "🇳🇱" },
+  { code: "ar", flag: "🇸🇦" },
+  { code: "ru", flag: "🇷🇺" },
+  { code: "tr", flag: "🇹🇷" },
 ];
 
 export function LanguageSelector() {
   const { locale, setLocale, t } = useLanguage();
   const [open, setOpen] = useState(false);
+  const isRTL = useIsRTL();
 
   const rawScheme = useColorScheme();
   const colorScheme: ColorSchemeName =
@@ -60,16 +65,19 @@ export function LanguageSelector() {
       <Pressable
         onPress={() => setOpen(true)}
         className={[
-          "flex-row items-center rounded-full border px-4 py-2 active:opacity-70 active:scale-95",
+          "items-center rounded-full border px-4 py-2 active:opacity-70 active:scale-95",
+          isRTL ? "flex-row-reverse" : "flex-row",
           containerBgClass,
           borderClass,
         ].join(" ")}
       >
-        <Text className="mr-2 text-[18px]">{current.flag}</Text>
+        <Text className={[isRTL ? "ml-2" : "mr-2", "text-[18px]"].join(" ")}>
+          {current.flag}
+        </Text>
 
         <ThemedText
           variant="small"
-          className="mr-2 font-semibold"
+          className={[isRTL ? "ml-2" : "mr-2", "font-semibold"].join(" ")}
         >
           {current.code.toUpperCase()}
         </ThemedText>
@@ -119,11 +127,12 @@ export function LanguageSelector() {
                       key={l.code}
                       onPress={() => handleSelect(l.code)}
                       className={[
-                        "mx-2 mb-1 flex-row items-center rounded-xl px-5 py-3",
+                        "mx-2 mb-1 items-center rounded-xl px-5 py-3",
+                        isRTL ? "flex-row-reverse" : "flex-row",
                         isActive ? selectedRowClass : pressedRowClass,
                       ].join(" ")}
                     >
-                      <Text className="mr-4 text-[24px]">
+                      <Text className={[isRTL ? "ml-4" : "mr-4", "text-[24px]"].join(" ")}>
                         {l.flag}
                       </Text>
 
@@ -134,6 +143,7 @@ export function LanguageSelector() {
                             "font-medium",
                             isActive ? primaryTextClass : "",
                           ].join(" ")}
+                          align={isRTL ? "right" : "left"}
                         >
                           {t.languages[l.code]}
                         </ThemedText>

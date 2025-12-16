@@ -10,6 +10,7 @@ import {
   type PrayerColors,
 } from "@/contexts/prayer-theme-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useIsRTL } from "@/hooks/use-is-rtl";
 import { usePrayerAlarms } from "@/hooks/usePrayerAlarms";
 import type { PrayerName } from "@/lib/prayer-times";
 
@@ -33,6 +34,7 @@ const PRAYERS: PrayerName[] = ["fajr", "dhuhr", "asr", "maghrib", "isha"];
 
 export default function SettingsScreen() {
   const { t } = useLanguage();
+  const isRTL = useIsRTL();
   const rawScheme = useColorScheme();
   const colorScheme: ColorSchemeName =
     rawScheme === "dark" ? "dark" : "light";
@@ -140,7 +142,7 @@ export default function SettingsScreen() {
                 />
 
                 {index < PRAYERS.length - 1 ? (
-                  <Divider insetClassName="ml-9" />
+                  <Divider insetClassName={isRTL ? "mr-9" : "ml-9"} />
                 ) : null}
               </View>
             ))}
@@ -166,26 +168,33 @@ export default function SettingsScreen() {
                 onPress={() => setSelectedPrayer(prayer as keyof PrayerColors)}
                 accessibilityRole="button"
                 accessibilityLabel={t.prayers[prayer]}
-                className={["flex-row items-center py-3.5", pressedRowClass].join(" ")}
+                className={[
+                  "items-center py-3.5",
+                  isRTL ? "flex-row-reverse" : "flex-row",
+                  pressedRowClass,
+                ].join(" ")}
               >
                 <View
-                  className="mr-4 h-8 w-8 rounded-full"
+                  className={[isRTL ? "ml-4" : "mr-4", "h-8 w-8 rounded-full"].join(" ")}
                   style={{ backgroundColor: colors[prayer as keyof PrayerColors] }}
                 />
 
-                <ThemedText className="flex-1 text-[16px] font-semibold">
+                <ThemedText
+                  className="flex-1 text-[16px] font-semibold"
+                  align={isRTL ? "right" : "left"}
+                >
                   {t.prayers[prayer]}
                 </ThemedText>
 
                 <Ionicons
-                  name="chevron-forward"
+                  name={isRTL ? "chevron-back" : "chevron-forward"}
                   size={20}
                   color={theme.textMuted}
                 />
               </Pressable>
 
               {index < PRAYERS.length - 1 ? (
-                <Divider insetClassName="ml-12" />
+                <Divider insetClassName={isRTL ? "mr-12" : "ml-12"} />
               ) : null}
             </View>
           ))}
@@ -216,8 +225,13 @@ export default function SettingsScreen() {
             onPress={(e) => e.stopPropagation()}
             className={["rounded-t-3xl p-6 pb-10", sheetBgClass].join(" ")}
           >
-            <View className="mb-6 flex-row items-center justify-between">
-              <ThemedText variant="subtitle" className="capitalize">
+            <View
+              className={[
+                "mb-6 items-center justify-between",
+                isRTL ? "flex-row-reverse" : "flex-row",
+              ].join(" ")}
+            >
+              <ThemedText variant="subtitle" className="capitalize" align={isRTL ? "right" : "left"}>
                 {selectedPrayer ? t.prayers[selectedPrayer as PrayerName] : ""}
               </ThemedText>
               <Pressable
