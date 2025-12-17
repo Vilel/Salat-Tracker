@@ -175,6 +175,7 @@ export default function QadaScreen() {
         <Modal
           animationType="fade"
           transparent={true}
+          statusBarTranslucent
           visible={!!editingDateKey}
           onRequestClose={() => setEditingDateKey(null)}
         >
@@ -311,10 +312,10 @@ export default function QadaScreen() {
               >
                 {t.qada.summaryDetailsTitle}
               </ThemedText>
-              <ThemedText className="mt-1 font-medium">
+              <ThemedText className={["mt-1 font-medium", textClass].join(" ")}>
                 {totalMissed} {t.qada.missedLabel}
               </ThemedText>
-              <ThemedText className="font-medium">
+              <ThemedText className={["font-medium", textClass].join(" ")}>
                 {qadaCleared} {t.qada.clearedLabel}
               </ThemedText>
               <ThemedText
