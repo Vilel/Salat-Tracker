@@ -1,6 +1,7 @@
 import { useLanguage } from "@/contexts/language-context";
 import {
     cancelScheduledNotification,
+    getAllScheduledPrayerAlarms,
     getNotificationPermissionStatus,
     isExpoGo,
     requestNotificationPermissions,
@@ -13,6 +14,7 @@ import {
     mergeAlarmIds,
     savePrayerAlarmIds
 } from "@/lib/prayer-alarm-schedule-storage";
+import { buildPrayerAlarmSyncPlan } from "@/lib/prayer-alarm-sync";
 import {
     calculateAlarmSchedule,
     getPrayersForDate,
@@ -137,7 +139,7 @@ export function usePrayerAlarms() {
   }, [refreshPermissionStatus, supported]);
 
   // Core reschedule logic (internal, not debounced)
-  // Uses diff algorithm to minimize cancel/schedule operations
+  // Uses OS reconciliation (preferred) with a storage-only diff fallback.
   const doReschedule = useCallback(async () => {
     if (!supported) return;
     if (!loaded || !prayers || !location) return;
@@ -167,45 +169,100 @@ export function usePrayerAlarms() {
       const items = calculateAlarmSchedule(new Date(), prayers, tomorrowPrayers, currentPrefs);
       const desiredKeys = new Set(items.map(item => item.key));
 
-      // 4. Calculate diff: what to cancel, what to schedule, what to keep
-      const diff = calculateAlarmDiff(existingKeys, desiredKeys);
-
-      // 5. Cancel only alarms that are no longer needed (parallel)
-      if (diff.toCancel.length > 0) {
-        const cancelPromises = diff.toCancel.map(async (key) => {
-          const id = existingIds[key];
-          if (id) {
-            try {
-              await cancelScheduledNotification(id);
-            } catch (e) {
-              console.warn(`Failed to cancel notification ${key}:`, e);
-            }
-          }
+      // 4. Preferred: reconcile against OS scheduled notifications (fixes drift + removes duplicates)
+      let usedOsReconcile = false;
+      try {
+        const scheduled = await getAllScheduledPrayerAlarms();
+        const syncPlan = buildPrayerAlarmSyncPlan({
+          desiredKeys,
+          storedIds: existingIds,
+          scheduled,
         });
-        await Promise.all(cancelPromises);
-      }
 
-      // 6. Schedule only new alarms (those not already scheduled)
-      const newIds: Record<string, string> = {};
-      const itemsToSchedule = items.filter(item => diff.toSchedule.includes(item.key));
-      
-      for (const item of itemsToSchedule) {
-        const title = tRef.current.prayers[item.prayer];
-        const body = `${tRef.current.alarm.notificationBody} ${title}`;
-        
-        const id = await schedulePrayerAlarm(item.prayer, item.time, title, body);
-        if (id) {
-          newIds[item.key] = id;
+        // Cancel stale + duplicates (best-effort)
+        if (syncPlan.idsToCancel.length > 0) {
+          await Promise.all(
+            syncPlan.idsToCancel.map(async (id) => {
+              try {
+                await cancelScheduledNotification(id);
+              } catch (e) {
+                console.warn(`Failed to cancel notification ${id}:`, e);
+              }
+            })
+          );
         }
+
+        // Schedule missing desired keys (based on what is actually scheduled post-sync)
+        const existingOsKeys = new Set(Object.keys(syncPlan.scheduledKeyToId));
+        const diff = calculateAlarmDiff(existingOsKeys, desiredKeys);
+
+        const toScheduleKeySet = new Set(diff.toSchedule);
+        const newIds: Record<string, string> = {};
+        for (const item of items) {
+          if (!toScheduleKeySet.has(item.key)) continue;
+
+          const title = tRef.current.prayers[item.prayer];
+          const body = `${tRef.current.alarm.notificationBody} ${title}`;
+
+          const id = await schedulePrayerAlarm(item.prayer, item.time, title, body);
+          if (id) newIds[item.key] = id;
+        }
+
+        // Persist the reconciled truth (fixes storage drift)
+        await savePrayerAlarmIds({ ...syncPlan.scheduledKeyToId, ...newIds });
+
+        usedOsReconcile = true;
+
+        if (__DEV__) {
+          console.log(
+            `[Alarms] Reconcile: cancelled=${syncPlan.idsToCancel.length}, scheduled=${diff.toSchedule.length}, kept=${diff.toKeep.length}`
+          );
+        }
+      } catch (e) {
+        // If OS introspection fails (rare), fall back to storage-based diff
+        console.warn("Failed to reconcile scheduled alarms with OS, falling back to storage diff:", e);
       }
 
-      // 7. Merge IDs: remove cancelled, add new, keep existing
-      const mergedIds = mergeAlarmIds(existingIds, diff.toCancel, newIds);
-      await savePrayerAlarmIds(mergedIds);
+      if (!usedOsReconcile) {
+        // 4b. Fallback: Calculate diff based on AsyncStorage-only keys
+        const diff = calculateAlarmDiff(existingKeys, desiredKeys);
 
-      // Log stats for debugging (can be removed in production)
-      if (__DEV__) {
-        console.log(`[Alarms] Diff result: cancelled=${diff.toCancel.length}, scheduled=${diff.toSchedule.length}, kept=${diff.toKeep.length}`);
+        // Cancel only alarms that are no longer needed (parallel)
+        if (diff.toCancel.length > 0) {
+          const cancelPromises = diff.toCancel.map(async (key) => {
+            const id = existingIds[key];
+            if (id) {
+              try {
+                await cancelScheduledNotification(id);
+              } catch (e) {
+                console.warn(`Failed to cancel notification ${key}:`, e);
+              }
+            }
+          });
+          await Promise.all(cancelPromises);
+        }
+
+        // Schedule only new alarms (those not already scheduled)
+        const newIds: Record<string, string> = {};
+        const itemsToSchedule = items.filter(item => diff.toSchedule.includes(item.key));
+
+        for (const item of itemsToSchedule) {
+          const title = tRef.current.prayers[item.prayer];
+          const body = `${tRef.current.alarm.notificationBody} ${title}`;
+
+          const id = await schedulePrayerAlarm(item.prayer, item.time, title, body);
+          if (id) {
+            newIds[item.key] = id;
+          }
+        }
+
+        // Merge IDs: remove cancelled, add new, keep existing
+        const mergedIds = mergeAlarmIds(existingIds, diff.toCancel, newIds);
+        await savePrayerAlarmIds(mergedIds);
+
+        if (__DEV__) {
+          console.log(`[Alarms] Diff result: cancelled=${diff.toCancel.length}, scheduled=${diff.toSchedule.length}, kept=${diff.toKeep.length}`);
+        }
       }
     } finally {
       isReschedulingRef.current = false;

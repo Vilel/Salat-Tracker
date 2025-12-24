@@ -11,6 +11,7 @@
 import {
     cancelScheduledNotification,
     checkNotificationPermissions,
+    getAllScheduledPrayerAlarms,
     getNotificationPermissionStatus,
     isExpoGo,
     requestNotificationPermissions,
@@ -93,6 +94,50 @@ describe("notifications", () => {
       const id = await schedulePrayerAlarm("fajr", futureDate, "Fajr", "Body");
 
       expect(id).toBeNull();
+    });
+  });
+
+  describe("getAllScheduledPrayerAlarms", () => {
+    it("should return only prayer_alarm notifications and build keys robustly", async () => {
+      const fajrIso = "2024-01-01T05:00:00.000Z";
+      const dhuhrIso = "2024-01-01T12:00:00.000Z";
+      const asrIso = "2024-01-01T15:00:00.000Z";
+
+      mockNotifications.getAllScheduledNotificationsAsync.mockResolvedValueOnce([
+        {
+          identifier: "id1",
+          content: { data: { type: "prayer_alarm", prayerName: "fajr" } },
+          trigger: { date: new Date(fajrIso).getTime() },
+        },
+        {
+          identifier: "id2",
+          content: { data: { type: "other", prayerName: "dhuhr" } },
+          trigger: { date: new Date(dhuhrIso).getTime() },
+        },
+        {
+          identifier: "id3",
+          content: { data: { type: "prayer_alarm", prayerName: "dhuhr" } },
+          trigger: { date: dhuhrIso },
+        },
+        {
+          identifier: "id4",
+          content: { data: { type: "prayer_alarm", prayerName: "asr" } },
+          trigger: { date: new Date(asrIso) },
+        },
+        {
+          identifier: "id5",
+          content: { data: { type: "prayer_alarm" } },
+          trigger: { date: new Date(asrIso).getTime() },
+        },
+      ]);
+
+      const result = await getAllScheduledPrayerAlarms();
+
+      expect(result).toHaveLength(4);
+      expect(result.find((x) => x.id === "id1")?.key).toBe(`fajr:${fajrIso}`);
+      expect(result.find((x) => x.id === "id3")?.key).toBe(`dhuhr:${dhuhrIso}`);
+      expect(result.find((x) => x.id === "id4")?.key).toBe(`asr:${asrIso}`);
+      expect(result.find((x) => x.id === "id5")?.key).toBeNull();
     });
   });
 

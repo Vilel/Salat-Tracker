@@ -61,6 +61,26 @@ export interface AlarmDiff {
 }
 
 /**
+ * Minimal representation of a scheduled prayer alarm in the OS scheduler.
+ * Key format MUST match calculateAlarmSchedule(): `${prayerName}:${date.toISOString()}`.
+ */
+export type ScheduledPrayerAlarm = {
+  id: string;
+  key: string;
+};
+
+export type PrayerAlarmIdMapByKey = Record<string, string>;
+
+export interface AlarmReconcileResult {
+  /** Notification IDs to cancel (stale + duplicates) */
+  toCancelIds: string[];
+  /** One kept scheduled notification ID per desired key */
+  keepByKey: PrayerAlarmIdMapByKey;
+  /** Keys that should exist but are missing -> schedule these */
+  toScheduleKeys: string[];
+}
+
+/**
  * Calculate the diff between existing scheduled alarms and desired alarms.
  * 
  * @param existingKeys - Keys currently scheduled (from storage)
@@ -92,6 +112,46 @@ export function calculateAlarmDiff(
   }
 
   return { toCancel, toSchedule, toKeep };
+}
+
+/**
+ * Reconcile OS-scheduled prayer alarms with the desired schedule.
+ *
+ * This is more robust than relying solely on AsyncStorage, because the OS can
+ * contain scheduled notifications that our storage lost (app reinstall, data
+ * cleared, or previous versions). It also removes duplicates for the same key.
+ */
+export function reconcileScheduledPrayerAlarms(
+  desiredKeys: Set<string>,
+  scheduled: ScheduledPrayerAlarm[]
+): AlarmReconcileResult {
+  const byKey = new Map<string, string[]>();
+  for (const s of scheduled) {
+    const list = byKey.get(s.key);
+    if (list) list.push(s.id);
+    else byKey.set(s.key, [s.id]);
+  }
+
+  const toCancelIds: string[] = [];
+  const keepByKey: PrayerAlarmIdMapByKey = {};
+
+  for (const [key, ids] of byKey.entries()) {
+    if (!desiredKeys.has(key)) {
+      toCancelIds.push(...ids);
+      continue;
+    }
+
+    const [keep, ...dupes] = ids;
+    if (keep) keepByKey[key] = keep;
+    if (dupes.length > 0) toCancelIds.push(...dupes);
+  }
+
+  const toScheduleKeys: string[] = [];
+  for (const key of desiredKeys) {
+    if (!keepByKey[key]) toScheduleKeys.push(key);
+  }
+
+  return { toCancelIds, keepByKey, toScheduleKeys };
 }
 
 /**

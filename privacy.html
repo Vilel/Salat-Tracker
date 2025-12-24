@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta
+      name="description"
+      content="Privacy Policy for Salat Tracker (Google Play / GitHub Pages)."
+    />
+    <title>Privacy Policy — Salat Tracker</title>
+    <style>
+      :root {
+        --bg: #0b1220;
+        --card: #111a2e;
+        --text: #e7eefc;
+        --muted: #b7c4e2;
+        --border: rgba(231, 238, 252, 0.14);
+        --link: #93c5fd;
+        --accent: #4f46e5;
+        --shadow: 0 12px 40px rgba(0, 0, 0, 0.32);
+      }
+
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg: #f6f8ff;
+          --card: #ffffff;
+          --text: #0b1220;
+          --muted: #4a5a78;
+          --border: rgba(11, 18, 32, 0.12);
+          --link: #1d4ed8;
+          --accent: #4f46e5;
+          --shadow: 0 12px 40px rgba(11, 18, 32, 0.12);
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+          Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+        line-height: 1.55;
+        background: radial-gradient(
+            1200px 800px at 20% -10%,
+            rgba(79, 70, 229, 0.22),
+            transparent 55%
+          ),
+          radial-gradient(
+            900px 600px at 120% 10%,
+            rgba(147, 197, 253, 0.18),
+            transparent 50%
+          ),
+          var(--bg);
+        color: var(--text);
+      }
+
+      a {
+        color: var(--link);
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+
+      .container {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 40px 16px 80px;
+      }
+
+      header {
+        padding: 18px 0 12px;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 10px 14px;
+        background: rgba(17, 26, 46, 0.35);
+        backdrop-filter: blur(10px);
+      }
+
+      @media (prefers-color-scheme: light) {
+        .badge {
+          background: rgba(255, 255, 255, 0.65);
+        }
+      }
+
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: var(--accent);
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+      }
+
+      h1 {
+        margin: 14px 0 8px;
+        font-size: clamp(26px, 4vw, 40px);
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+      }
+
+      .sub {
+        margin: 0;
+        color: var(--muted);
+        max-width: 70ch;
+      }
+
+      nav {
+        margin-top: 18px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .pill {
+        display: inline-block;
+        border: 1px solid var(--border);
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(17, 26, 46, 0.35);
+      }
+
+      @media (prefers-color-scheme: light) {
+        .pill {
+          background: rgba(255, 255, 255, 0.7);
+        }
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 22px;
+        box-shadow: var(--shadow);
+        margin-top: 18px;
+      }
+
+      h2 {
+        margin: 0 0 12px;
+        font-size: 20px;
+        letter-spacing: -0.01em;
+      }
+
+      h3 {
+        margin: 18px 0 10px;
+        font-size: 16px;
+        letter-spacing: -0.01em;
+      }
+
+      ul {
+        margin: 10px 0 0 22px;
+      }
+
+      li {
+        margin: 6px 0;
+      }
+
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+          "Liberation Mono", "Courier New", monospace;
+        font-size: 0.95em;
+        padding: 0 0.35em;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .lang-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 18px;
+      }
+
+      @media (min-width: 900px) {
+        .lang-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      footer {
+        margin-top: 20px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="badge" role="note" aria-label="Policy badge">
+          <span class="dot" aria-hidden="true"></span>
+          <span><strong>Salat Tracker</strong> — Privacy Policy</span>
+        </div>
+        <h1>Privacy Policy</h1>
+        <p class="sub">
+          This page is intended for Google Play compliance and public reference.
+          It describes how <strong>Salat Tracker</strong> handles data.
+        </p>
+        <nav aria-label="Page navigation">
+          <a class="pill" href="#es">Español</a>
+          <a class="pill" href="#en">English</a>
+          <a class="pill" href="#contact">Contact</a>
+        </nav>
+      </header>
+
+      <div class="lang-grid">
+        <section id="es" class="card" lang="es" aria-label="Política de privacidad (Español)">
+          <h2>Política de Privacidad (Español)</h2>
+          <p class="muted">
+            <strong>Fecha de entrada en vigor:</strong> 2025-12-24
+          </p>
+
+          <h3>Resumen</h3>
+          <ul>
+            <li>
+              <strong>Sin cuentas:</strong> Salat Tracker no requiere registro ni
+              inicio de sesión.
+            </li>
+            <li>
+              <strong>Datos principalmente locales:</strong> tus marcados de
+              salats, ajustes y preferencias se guardan en tu dispositivo.
+            </li>
+            <li>
+              <strong>Ubicación opcional:</strong> si activas el modo automático,
+              usamos tu ubicación en primer plano para calcular horarios.
+            </li>
+            <li>
+              <strong>Terceros necesarios:</strong> para obtener horarios se
+              consulta la API pública de
+              <a
+                href="https://aladhan.com/prayer-times-api"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Aladhan</a
+              >; para updates OTA se usa
+              <a
+                href="https://expo.dev/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Expo Updates</a
+              >; y el geocodificado inverso puede depender del proveedor del
+              sistema (Apple/Google).
+            </li>
+          </ul>
+
+          <h3>Qué datos se tratan</h3>
+          <ul>
+            <li>
+              <strong>Ubicación (si la concedes):</strong> coordenadas
+              (latitud/longitud) para calcular los horarios de oración.
+            </li>
+            <li>
+              <strong>Ciudad/país (opcional):</strong> la app puede intentar
+              obtener una ciudad/país aproximados mediante geocodificación
+              inversa para mostrar un texto más amigable. Si falla, la app sigue
+              funcionando.
+            </li>
+            <li>
+              <strong>Datos de seguimiento:</strong> si marcas un salat como
+              completado, se guarda por día (formato <code>YYYY-MM-DD</code>) y
+              por oración (fajr/dhuhr/asr/maghrib/isha). También se guarda un
+              contador de “qadá” completado.
+            </li>
+            <li>
+              <strong>Preferencias y configuración:</strong> idioma, colores del
+              tema, modo de ubicación (auto o ubicación por defecto), y
+              preferencias de alarmas.
+            </li>
+            <li>
+              <strong>Caché de horarios:</strong> para mejorar el rendimiento, la
+              app guarda en local el último horario obtenido y la ubicación
+              asociada (si aplica) para reutilizarla de forma temporal.
+            </li>
+            <li>
+              <strong>Notificaciones locales:</strong> si activas alarmas, el
+              sistema operativo programará notificaciones locales. La app puede
+              guardar identificadores técnicos para poder cancelarlas o
+              re-sincronizarlas.
+            </li>
+          </ul>
+
+          <h3>Cómo se usan los datos</h3>
+          <ul>
+            <li>Calcular y mostrar horarios de oración y la próxima oración.</li>
+            <li>Mostrar ciudad/país (si está disponible) como referencia.</li>
+            <li>Permitir que marques tu progreso diario y ver estadísticas.</li>
+            <li>Programar y gestionar alarmas/notificaciones locales.</li>
+            <li>Recordar preferencias (idioma, tema, modo de ubicación).</li>
+          </ul>
+
+          <h3>Cuándo se comparte información</h3>
+          <p>
+            Salat Tracker no vende tu información. No tenemos un backend propio
+            para almacenar tus datos. Sin embargo, algunas funciones requieren
+            servicios externos:
+          </p>
+          <ul>
+            <li>
+              <strong>API de Aladhan (horarios):</strong> al solicitar horarios,
+              tu dispositivo realiza una petición a <code>api.aladhan.com</code>
+              (ver
+              <a
+                href="https://aladhan.com/prayer-times-api"
+                target="_blank"
+                rel="noopener noreferrer"
+                >documentación</a
+              >) incluyendo latitud/longitud y la fecha/hora. Como en cualquier
+              petición a Internet, el servicio puede ver tu dirección IP y
+              metadatos de red.
+            </li>
+            <li>
+              <strong>Geocodificación inversa (ciudad/país):</strong> puede ser
+              resuelta por el proveedor del sistema operativo (por ejemplo,
+              servicios de Apple o Google). Esto puede implicar que el sistema
+              envíe coordenadas al proveedor para resolver la dirección.
+            </li>
+            <li>
+              <strong>Expo Updates (actualizaciones OTA):</strong> la app puede
+              consultar/descargar actualizaciones desde infraestructura de Expo
+              (<code>u.expo.dev</code>). Consulta la política de privacidad de
+              Expo aquí:
+              <a
+                href="https://expo.dev/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                >expo.dev/privacy</a
+              >. Ese servicio puede recibir información técnica necesaria para
+              entregar updates (por ejemplo, datos del dispositivo/versión).
+            </li>
+          </ul>
+
+          <h3>Permisos del dispositivo</h3>
+          <ul>
+            <li>
+              <strong>Ubicación en primer plano:</strong> se usa para calcular
+              horarios precisos cuando activas el modo automático. La app no
+              solicita ubicación en segundo plano.
+            </li>
+            <li>
+              <strong>Notificaciones:</strong> para recordatorios de salat.
+            </li>
+            <li>
+              <strong>Alarmas exactas / pantalla de bloqueo (Android):</strong>
+              para mejorar el comportamiento tipo “alarma” (mayor prioridad,
+              pantalla encendida, etc.). Esto depende de la configuración del
+              dispositivo y del sistema.
+            </li>
+          </ul>
+
+          <h3>Retención y eliminación</h3>
+          <p>
+            Tus datos se guardan principalmente en tu dispositivo (almacenamiento
+            local). Puedes eliminarlos desinstalando la app o borrando los datos
+            de la app desde los ajustes del sistema.
+          </p>
+
+          <h3>Seguridad</h3>
+          <p>
+            Tomamos medidas razonables para minimizar los datos tratados y
+            almacenarlos localmente. Aun así, ningún sistema es 100% seguro. Te
+            recomendamos proteger tu dispositivo con un bloqueo de pantalla.
+          </p>
+
+          <h3>Privacidad de menores</h3>
+          <p>
+            Salat Tracker no está dirigido específicamente a menores y no busca
+            recopilar datos personales de niños.
+          </p>
+
+          <h3>Cambios en esta política</h3>
+          <p>
+            Podemos actualizar esta política si cambian las funcionalidades o
+            requisitos legales. La fecha de entrada en vigor se actualizará en
+            esta página.
+          </p>
+        </section>
+
+        <section id="en" class="card" lang="en" aria-label="Privacy Policy (English)">
+          <h2>Privacy Policy (English)</h2>
+          <p class="muted"><strong>Effective date:</strong> 2025-12-24</p>
+
+          <h3>Overview</h3>
+          <ul>
+            <li>
+              <strong>No accounts:</strong> Salat Tracker does not require sign
+              up or login.
+            </li>
+            <li>
+              <strong>Mostly on-device:</strong> your prayer tracking data,
+              settings, and preferences are stored on your device.
+            </li>
+            <li>
+              <strong>Optional location:</strong> if you enable automatic mode,
+              the app uses foreground location to calculate prayer times.
+            </li>
+            <li>
+              <strong>Required third parties:</strong> prayer times are fetched
+              from the public
+              <a
+                href="https://aladhan.com/prayer-times-api"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Aladhan API</a
+              >; over-the-air updates may use
+              <a
+                href="https://expo.dev/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Expo Updates</a
+              >; reverse geocoding may rely on OS providers (Apple/Google).
+            </li>
+          </ul>
+
+          <h3>Information handled by the app</h3>
+          <ul>
+            <li>
+              <strong>Location (if you grant permission):</strong> latitude and
+              longitude used to calculate accurate prayer times.
+            </li>
+            <li>
+              <strong>City/Country (optional):</strong> the app may attempt to
+              derive a friendly city/country label via reverse geocoding. If it
+              fails, core features still work.
+            </li>
+            <li>
+              <strong>Prayer tracking data:</strong> if you mark a prayer as
+              completed, the app stores a per-day record (<code>YYYY-MM-DD</code>)
+              with boolean values for each prayer (fajr/dhuhr/asr/maghrib/isha),
+              plus a numeric “qada cleared” counter.
+            </li>
+            <li>
+              <strong>Preferences and settings:</strong> language choice, theme
+              colors, location mode (auto vs default location), and alarm
+              preferences.
+            </li>
+            <li>
+              <strong>Prayer times cache:</strong> to improve performance, the
+              app stores the most recent fetched prayer times and related
+              parameters locally, and may reuse them for a limited time.
+            </li>
+            <li>
+              <strong>Local notifications:</strong> if you enable alarms, your
+              operating system schedules local notifications. The app may store
+              technical identifiers to cancel and resync scheduled alarms.
+            </li>
+          </ul>
+
+          <h3>How we use information</h3>
+          <ul>
+            <li>Calculate and display prayer times and the next prayer.</li>
+            <li>Show an optional city/country label when available.</li>
+            <li>Allow you to track daily completion and view stats.</li>
+            <li>Schedule and manage local prayer alarms/notifications.</li>
+            <li>Remember your preferences (language, theme, location mode).</li>
+          </ul>
+
+          <h3>Third-party services</h3>
+          <p>
+            Salat Tracker does not sell your information. We do not operate a
+            custom backend to store your tracking data. However, some features
+            require third-party services:
+          </p>
+          <ul>
+            <li>
+              <strong>Aladhan Prayer Times API:</strong> when fetching prayer
+              times, your device sends a request to <code>api.aladhan.com</code>
+              (see
+              <a
+                href="https://aladhan.com/prayer-times-api"
+                target="_blank"
+                rel="noopener noreferrer"
+                >documentation</a
+              >) including latitude/longitude and a timestamp/date parameter. As
+              with any internet request, the service may receive your IP address
+              and network metadata.
+            </li>
+            <li>
+              <strong>Reverse geocoding:</strong> may be performed by your
+              device’s OS provider (for example Apple or Google services), which
+              can involve sending coordinates to resolve place names.
+            </li>
+            <li>
+              <strong>Expo Updates (OTA):</strong> the app may check for and
+              download updates from Expo infrastructure (<code>u.expo.dev</code>).
+              Expo’s privacy policy is available at
+              <a
+                href="https://expo.dev/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                >expo.dev/privacy</a
+              >. Expo may receive technical data required to deliver updates
+              (such as device/app version information).
+            </li>
+          </ul>
+
+          <h3>Device permissions</h3>
+          <ul>
+            <li>
+              <strong>Foreground location:</strong> used for accurate prayer
+              times in automatic mode. The app does not request background
+              location.
+            </li>
+            <li>
+              <strong>Notifications:</strong> used for prayer reminders/alarms.
+            </li>
+            <li>
+              <strong>Exact alarms / lockscreen behavior (Android):</strong> used
+              to improve “alarm-like” reliability (high priority, show on lock
+              screen, etc.). Actual behavior may depend on device settings.
+            </li>
+          </ul>
+
+          <h3>Data retention and deletion</h3>
+          <p>
+            Data is stored primarily on your device. You can delete it by
+            uninstalling the app or clearing the app’s storage in your device
+            settings.
+          </p>
+
+          <h3>Security</h3>
+          <p>
+            We aim to minimize data collection and keep it on-device. However,
+            no method of storage is fully secure. We recommend using a device
+            screen lock.
+          </p>
+
+          <h3>Children’s privacy</h3>
+          <p>
+            Salat Tracker is not specifically directed to children and does not
+            knowingly collect personal information from children.
+          </p>
+
+          <h3>Changes to this policy</h3>
+          <p>
+            We may update this policy if features or legal requirements change.
+            The effective date will be updated on this page.
+          </p>
+        </section>
+      </div>
+
+      <section id="contact" class="card" aria-label="Contact">
+        <h2>Contact</h2>
+        <p>
+          For privacy questions or requests, contact the app publisher:
+        </p>
+        <ul>
+          <li>
+            <strong>Email:</strong>
+            <a href="mailto:vanguard3dge@gmail.com">vanguard3dge@gmail.com</a>
+          </li>
+          <li><strong>App name:</strong> Salat Tracker</li>
+        </ul>
+        <p class="muted">
+          Note: This document is provided as-is and does not constitute legal
+          advice.
+        </p>
+      </section>
+
+      <footer>
+        <p>
+          If you are viewing this page via GitHub Pages, you can link it in
+          Google Play as your Privacy Policy URL.
+        </p>
+      </footer>
+    </div>
+  </body>
+</html>
+

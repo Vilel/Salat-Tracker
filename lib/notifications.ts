@@ -1,6 +1,7 @@
 import type { PrayerName } from "@/lib/prayer-times";
 import Constants from "expo-constants";
 import { Platform } from "react-native";
+import type { ScheduledPrayerAlarm } from "@/lib/prayer-alarm-schedule-storage";
 
 export const ALARM_CHANNEL_ID = "salat-alarms";
 
@@ -10,12 +11,31 @@ export type NotificationPermissionStatus =
   | "undetermined"
   | "unavailable";
 
+export type ScheduledPrayerAlarmForSync = {
+  id: string;
+  /**
+   * Key format: `${prayerName}:${ISO_DATE}`.
+   * Null when we can't derive it from the trigger/data.
+   */
+  key: string | null;
+};
+
 /**
  * Expo Go no soporta correctamente expo-notifications (SDK 53+), y puede crashear
  * por side-effects al importar el módulo. En Expo Go deshabilitamos la funcionalidad.
  */
 export function isExpoGo(): boolean {
   return Constants.appOwnership === "expo";
+}
+
+function isPrayerName(value: unknown): value is PrayerName {
+  return (
+    value === "fajr" ||
+    value === "dhuhr" ||
+    value === "asr" ||
+    value === "maghrib" ||
+    value === "isha"
+  );
 }
 
 function getNotifications(): typeof import("expo-notifications") {
@@ -222,5 +242,85 @@ export async function getScheduledNotifications(): Promise<
       prayer: data?.prayerName ?? null,
     };
   });
+}
+
+/**
+ * Get all scheduled prayer alarm notifications from the OS scheduler.
+ * This is the source of truth for what's actually going to fire, and is used to
+ * dedupe/cancel stale alarms when storage drifts from the system schedule.
+ */
+export async function getAllScheduledPrayerAlarms(): Promise<ScheduledPrayerAlarmForSync[]> {
+  if (isExpoGo()) return [];
+
+  const Notifications = getNotifications();
+  const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+
+  return scheduled
+    .map((notif) => {
+      const data = notif.content.data as
+        | { prayerName?: unknown; type?: unknown }
+        | undefined;
+
+      if (!data || data.type !== "prayer_alarm") return null;
+
+      const prayerName = typeof data.prayerName === "string" ? data.prayerName : null;
+
+      const trigger = notif.trigger as { date?: unknown } | null;
+      const rawDate = trigger?.date;
+
+      const dateMs =
+        typeof rawDate === "number"
+          ? rawDate
+          : rawDate instanceof Date
+            ? rawDate.getTime()
+            : typeof rawDate === "string"
+              ? new Date(rawDate).getTime()
+              : null;
+
+      const key =
+        prayerName && dateMs !== null && Number.isFinite(dateMs)
+          ? `${prayerName}:${new Date(dateMs).toISOString()}`
+          : null;
+
+      return { id: notif.identifier, key } satisfies ScheduledPrayerAlarmForSync;
+    })
+    .filter((v): v is ScheduledPrayerAlarmForSync => v !== null);
+}
+
+/**
+ * Return only prayer-alarm notifications scheduled in the OS scheduler,
+ * normalized to our scheduling key format: `${prayerName}:${date.toISOString()}`.
+ *
+ * Note: We accept notifications without `type` for backward compatibility,
+ * as long as they contain a valid `prayerName`.
+ */
+export async function getScheduledPrayerAlarms(): Promise<ScheduledPrayerAlarm[]> {
+  if (isExpoGo()) return [];
+
+  const Notifications = getNotifications();
+  const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+
+  const out: ScheduledPrayerAlarm[] = [];
+  for (const notif of scheduled) {
+    const data = notif.content.data as { prayerName?: unknown; type?: unknown } | undefined;
+    const prayerName = data?.prayerName;
+    if (!isPrayerName(prayerName)) continue;
+
+    const type = data?.type;
+    if (type !== undefined && type !== "prayer_alarm") continue;
+
+    const trigger = notif.trigger as { date?: number } | null;
+    if (!trigger?.date) continue;
+
+    const date = new Date(trigger.date);
+    if (!Number.isFinite(date.getTime())) continue;
+
+    out.push({
+      id: notif.identifier,
+      key: `${prayerName}:${date.toISOString()}`,
+    });
+  }
+
+  return out;
 }
 
