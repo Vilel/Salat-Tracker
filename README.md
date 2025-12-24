@@ -223,11 +223,11 @@ The privacy policy page is at:
 
 - `privacy.html`
 
-If you enable GitHub Pages for this repository, the typical URL will be:
+Public Privacy Policy URL (Google Play compatible):
 
-`https://<github-username>.github.io/<repo-name>/privacy.html`
+- [Privacy Policy](https://vilel.github.io/Salat-Tracker/privacy.html)
 
-Use that URL in Google Play Console as the **Privacy Policy** link.
+Use this URL in Google Play Console as the **Privacy Policy** link.
 
 ---
 
